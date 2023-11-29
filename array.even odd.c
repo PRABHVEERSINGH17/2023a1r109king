@@ -5,8 +5,8 @@ void main()
     printf("enter the size of the array");
     scanf("%d",&n);
     int a[n],sum=0,sum1=0;
-    printf("enter the arrayb elements");
-    for(int i=0;i<n:i++)
+    printf("enter the array elements");
+    for(int i=0;i<n;i++)
     {
         scanf("%d",&a[i]);
         if(i%2==0)
@@ -15,5 +15,5 @@ void main()
         sum1=sum1+a[i];
     }
     printf("sum pf even array elements =%d",sum);
-    ptrintf("sum of odd array elements=%d",sum1);
+    printf("sum of odd array elements=%d",sum1);
 }
