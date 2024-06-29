@@ -1,0 +1,39 @@
+#include <stdio.h>
+
+int main() {
+    // Dimensions of A0 paper
+    int width_A0 = 1189;
+    int height_A0 = 841;
+
+    // Array to store dimensions of papers A0 to A8
+    int dimensions[9][2]; // dimensions[n][0] for width, dimensions[n][1] for height
+
+    // A0 dimensions
+    dimensions[0][0] = width_A0;
+    dimensions[0][1] = height_A0;
+
+    // Calculate dimensions for A1 to A8
+    for (int n = 1; n <= 8; ++n) {
+        dimensions[n][0] = dimensions[n - 1][1]; // Width of A(n) is the height of A(n-1)
+        dimensions[n][1] = dimensions[n - 1][0] / 2; // Height of A(n) is half the width of A(n-1)
+    }
+
+    // Print dimensions for A0 to A8
+    printf("Paper sizes:\n");
+    for (int n = 0; n <= 8; ++n) {
+        printf("A%d: %dmm x %dmm\n", n, dimensions[n][0], dimensions[n][1]);
+    }
+
+    return 0;
+}
+Paper sizes:
+A0: 1189mm x 841mm
+A1: 841mm x 594mm
+A2: 594mm x 420mm
+A3: 420mm x 297mm
+A4: 297mm x 210mm
+A5: 210mm x 148mm
+A6: 148mm x 105mm
+A7: 105mm x 74mm
+A8: 74mm x 52mm
+ 
