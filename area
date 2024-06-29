@@ -1,0 +1,48 @@
+#include <stdio.h>
+
+int main() {
+    float length, breadth, radius;
+    float area_rectangle, perimeter_rectangle;
+    float area_circle, circumference_circle;
+    const float PI = 3.14159;
+
+    // Input for rectangle dimensions
+    printf("Enter length of rectangle: ");
+    scanf("%f", &length);
+    printf("Enter breadth of rectangle: ");
+    scanf("%f", &breadth);
+
+    // Calculate area and perimeter of rectangle
+    area_rectangle = length * breadth;
+    perimeter_rectangle = 2 * (length + breadth);
+
+    // Input for circle radius
+    printf("Enter radius of circle: ");
+    scanf("%f", &radius);
+
+    // Calculate area and circumference of circle
+    area_circle = PI * radius * radius;
+    circumference_circle = 2 * PI * radius;
+
+    // Output results
+    printf("\nRectangle:\n");
+    printf("Area = %.2f square units\n", area_rectangle);
+    printf("Perimeter = %.2f units\n", perimeter_rectangle);
+
+    printf("\nCircle:\n");
+    printf("Area = %.2f square units\n", area_circle);
+    printf("Circumference = %.2f units\n", circumference_circle);
+
+    return 0;
+}
+Enter length of rectangle: 12.3
+Enter breadth of rectangle: 12.1
+Enter radius of circle: 6.2
+
+Rectangle:
+Area = 148.83 square units
+Perimeter = 48.80 units
+
+Circle:
+Area = 120.76 square units
+Circumference = 38.96 units
