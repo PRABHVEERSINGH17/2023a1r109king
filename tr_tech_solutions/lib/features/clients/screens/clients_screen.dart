@@ -5,6 +5,12 @@ import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
+import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
+import 'package:tr_tech_solutions/features/leads/screens/leads_screen.dart';
+import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
+import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart';
+import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
+import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
@@ -39,8 +45,8 @@ class ClientsScreen extends ConsumerWidget {
           PageHeader(
             title: 'Clients',
             subtitle: isDemo
-                ? 'Open a client to see linked invoices, payments, projects & more'
-                : 'Open a client hub to manage invoices, payments, projects & tickets',
+                ? 'Add a client → lead, invoice, payment & more are created automatically'
+                : 'Add a client → related lead, project, invoice, payment, service & ticket are created',
             action: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -69,7 +75,7 @@ class ClientsScreen extends ConsumerWidget {
                 border: Border.all(color: AppColors.primary.withOpacity(0.35)),
               ),
               child: const Text(
-                'Demo Mode: showing 5 sample clients. Add, edit, and explore freely.',
+                'Demo Mode: Add a client and related lead/project/invoice/payment/service/ticket are created automatically.',
                 style: TextStyle(fontSize: 13),
               ),
             ),
@@ -219,11 +225,29 @@ class ClientsScreen extends ConsumerWidget {
                 try {
                   if (client == null) {
                     await service.createClient(data);
+                    ref.invalidate(clientsProvider);
+                    // Related modules are auto-created with the client.
+                    ref.invalidate(leadsProvider);
+                    ref.invalidate(projectsProvider);
+                    ref.invalidate(invoicesProvider);
+                    ref.invalidate(paymentsProvider);
+                    ref.invalidate(servicesProvider);
+                    ref.invalidate(ticketsProvider);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Client created — lead, project, invoice, payment, service & ticket were added automatically',
+                          ),
+                        ),
+                      );
+                    }
                   } else {
                     await service.updateClient(client.id, data);
+                    ref.invalidate(clientsProvider);
+                    if (ctx.mounted) Navigator.pop(ctx);
                   }
-                  ref.invalidate(clientsProvider);
-                  if (ctx.mounted) Navigator.pop(ctx);
                 } catch (e) {
                   if (ctx.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

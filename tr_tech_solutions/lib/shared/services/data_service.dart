@@ -10,6 +10,7 @@ import 'package:tr_tech_solutions/shared/models/project.dart';
 import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/app_repository.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
 
 class SupabaseRepository implements AppRepository {
@@ -75,9 +76,18 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<ClientModel> createClient(Map<String, dynamic> data) async {
+    final bootstrap = data.remove('bootstrap_related') as bool? ?? true;
     data['user_id'] = _userId;
     final response = await _client.from('clients').insert(data).select().single();
-    return ClientModel.fromJson(response);
+    final client = ClientModel.fromJson(response);
+    if (bootstrap) {
+      try {
+        await bootstrapRelatedRecordsForClient(this, client);
+      } catch (_) {
+        // Client is saved even if related starter records fail (schema/RLS).
+      }
+    }
+    return client;
   }
 
   @override

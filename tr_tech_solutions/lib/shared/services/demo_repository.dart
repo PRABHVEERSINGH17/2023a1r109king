@@ -6,6 +6,7 @@ import 'package:tr_tech_solutions/shared/models/project.dart';
 import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/app_repository.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
 import 'package:uuid/uuid.dart';
 
 class DemoRepository implements AppRepository {
@@ -557,6 +558,12 @@ class DemoRepository implements AppRepository {
       createdAt: DateTime.now(),
     );
     _clients.insert(0, client);
+
+    // Creating a client automatically creates linked lead + related records.
+    final bootstrap = data['bootstrap_related'] as bool? ?? true;
+    if (bootstrap) {
+      await bootstrapRelatedRecordsForClient(this, client);
+    }
     return _delay(client);
   }
 

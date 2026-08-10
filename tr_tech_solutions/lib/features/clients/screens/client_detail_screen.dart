@@ -7,6 +7,7 @@ import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
+import 'package:tr_tech_solutions/features/leads/screens/leads_screen.dart';
 import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
 import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart';
 import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
@@ -26,6 +27,7 @@ class ClientDetailScreen extends ConsumerWidget {
     ref.invalidate(servicesProvider);
     ref.invalidate(ticketsProvider);
     ref.invalidate(paymentsProvider);
+    ref.invalidate(leadsProvider);
     ref.invalidate(clientsProvider);
   }
 
@@ -37,6 +39,7 @@ class ClientDetailScreen extends ConsumerWidget {
     final servicesAsync = ref.watch(servicesProvider);
     final ticketsAsync = ref.watch(ticketsProvider);
     final paymentsAsync = ref.watch(paymentsProvider);
+    final leadsAsync = ref.watch(leadsProvider);
 
     return clientsAsync.when(
       loading: () => const LoadingWidget(),
@@ -68,6 +71,8 @@ class ClientDetailScreen extends ConsumerWidget {
         final payments =
             paymentsAsync.valueOrNull?.where((p) => p['client_id'] == clientId).toList() ??
                 const [];
+        final leads =
+            leadsAsync.valueOrNull?.where((l) => l.clientId == clientId).toList() ?? const [];
 
         final paidTotal = payments.fold<double>(
           0,
@@ -114,7 +119,7 @@ class ClientDetailScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                'Everything below belongs to this client — invoices, payments, projects, services, and tickets.',
+                'Everything below is linked to this client. New clients also auto-create starter lead, project, invoice, payment, service, and ticket records.',
                 style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
               ),
               const SizedBox(height: 16),
@@ -169,6 +174,7 @@ class ClientDetailScreen extends ConsumerWidget {
                 spacing: 12,
                 runSpacing: 12,
                 children: [
+                  _StatChip(label: 'Leads', value: '${leads.length}'),
                   _StatChip(label: 'Projects', value: '${projects.length}'),
                   _StatChip(label: 'Invoices', value: '${invoices.length}'),
                   _StatChip(label: 'Services', value: '${services.length}'),
@@ -177,6 +183,20 @@ class ClientDetailScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 28),
+              _Section(
+                title: 'Leads',
+                empty: leads.isEmpty,
+                children: leads
+                    .map(
+                      (l) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l.name),
+                        subtitle: Text('${l.source ?? 'lead'} · ${Formatters.formatCurrency(l.value)}'),
+                        trailing: StatusBadge(status: l.stage, compact: true),
+                      ),
+                    )
+                    .toList(),
+              ),
               _Section(
                 title: 'Projects',
                 empty: projects.isEmpty,

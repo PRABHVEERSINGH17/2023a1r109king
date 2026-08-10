@@ -28,6 +28,7 @@ void main() {
       'name': 'Test Client',
       'email': 'test@example.com',
       'status': 'active',
+      'bootstrap_related': false,
     });
     expect(created.name, 'Test Client');
 
@@ -39,11 +40,40 @@ void main() {
     expect(afterDelete.length, before.length);
   });
 
+  test('creating a client auto-creates lead and related records', () async {
+    final repo = DemoRepository();
+    final client = await repo.createClient({
+      'name': 'Auto Client',
+      'email': 'auto@example.com',
+      'company': 'Auto Co',
+      'status': 'active',
+    });
+
+    final leads = await repo.getLeads();
+    final projects = await repo.getProjects();
+    final invoices = await repo.getInvoices();
+    final services = await repo.getServices();
+    final tickets = await repo.getTickets();
+    final payments = await repo.getPayments();
+
+    expect(leads.where((l) => l.clientId == client.id), isNotEmpty);
+    expect(projects.where((p) => p.clientId == client.id), isNotEmpty);
+    expect(invoices.where((i) => i.clientId == client.id), isNotEmpty);
+    expect(services.where((s) => s.clientId == client.id), isNotEmpty);
+    expect(tickets.where((t) => t.clientId == client.id), isNotEmpty);
+    expect(payments.where((p) => p['client_id'] == client.id), isNotEmpty);
+
+    final lead = leads.firstWhere((l) => l.clientId == client.id);
+    expect(lead.name, 'Auto Client');
+    expect(lead.stage, 'won');
+  });
+
   test('creating project/payment/invoice links to client', () async {
     final repo = DemoRepository();
     final client = await repo.createClient({
       'name': 'Linked Client',
       'status': 'active',
+      'bootstrap_related': false,
     });
 
     final project = await repo.createProject({
