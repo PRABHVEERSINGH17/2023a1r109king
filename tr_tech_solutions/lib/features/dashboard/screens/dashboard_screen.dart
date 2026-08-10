@@ -25,15 +25,11 @@ final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   try {
     return await service.getDashboardStats();
   } catch (_) {
-    // Live backend failed — fall back to demo seed so the dashboard still works.
-    if (!ref.read(demoModeProvider)) {
-      Future.microtask(() {
-        if (!ref.read(demoModeProvider)) {
-          ref.read(demoModeProvider.notifier).state = true;
-        }
-      });
+    // Keep the UI usable without silently flipping modes mid-session.
+    if (ref.read(demoModeProvider)) {
+      return ref.read(demoRepositoryProvider).getDashboardStats();
     }
-    return ref.read(demoRepositoryProvider).getDashboardStats();
+    return const DashboardStats();
   }
 });
 

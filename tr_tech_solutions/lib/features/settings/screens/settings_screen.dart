@@ -5,10 +5,27 @@ import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
+import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
+import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
+import 'package:tr_tech_solutions/features/leads/screens/leads_screen.dart';
+import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
+import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart';
+import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
+import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  void _invalidateAll(WidgetRef ref) {
+    ref.invalidate(clientsProvider);
+    ref.invalidate(leadsProvider);
+    ref.invalidate(projectsProvider);
+    ref.invalidate(invoicesProvider);
+    ref.invalidate(paymentsProvider);
+    ref.invalidate(servicesProvider);
+    ref.invalidate(ticketsProvider);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,12 +34,11 @@ class SettingsScreen extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ListView(
         children: [
           const PageHeader(
             title: 'Settings',
-            subtitle: 'Manage your account and preferences',
+            subtitle: 'Account, workspace mode, and app info',
           ),
           const SizedBox(height: 24),
           Card(
@@ -41,56 +57,54 @@ class SettingsScreen extends ConsumerWidget {
                   leading: const Icon(Icons.business),
                   title: const Text('Company'),
                   subtitle: const Text('TR Technology Solutions LLP'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.notifications_outlined),
-                  title: const Text('Notifications'),
-                  subtitle: const Text('Email and push notification preferences'),
-                  trailing: Switch(value: true, onChanged: (_) {}),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.wb_sunny_outlined),
-                  title: const Text('Appearance'),
-                  subtitle: const Text('Modern light workspace'),
-                  trailing: Switch(value: false, onChanged: null),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Backend Mode'),
+                  leading: Icon(
+                    isDemo ? Icons.science_outlined : Icons.cloud_done_outlined,
+                    color: AppColors.primary,
+                  ),
+                  title: const Text('Workspace Mode'),
                   subtitle: Text(
                     isDemo
-                        ? 'Demo mode (local sample data)'
+                        ? 'Demo Mode — full sample CRM (recommended)'
                         : SupabaseConfig.isConfigured
-                            ? 'Connected to Supabase'
-                            : 'Not configured - update assets/supabase.env',
-                    style: TextStyle(
-                      color: isDemo || SupabaseConfig.isConfigured
-                          ? AppColors.success
-                          : AppColors.warning,
-                    ),
+                            ? 'Live Supabase backend'
+                            : 'Supabase not configured — use Demo Mode',
                   ),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.refresh_rounded),
+                  title: const Text('Reset Demo Workspace'),
+                  subtitle: const Text('Reload sample clients, invoices, payments & more'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
+                    _invalidateAll(ref);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Demo workspace reset — sample data loaded')),
+                      );
+                      context.go('/dashboard');
+                    }
+                  },
                 ),
                 if (!isDemo) ...[
                   const Divider(height: 1),
                   ListTile(
-                    leading: const Icon(Icons.science_outlined),
-                    title: const Text('Load Demo Clients'),
-                    subtitle: const Text('Switch to sample data with 5 clients'),
+                    leading: const Icon(Icons.bolt_rounded),
+                    title: const Text('Switch to Demo Mode'),
+                    subtitle: const Text('Use the fully working sample CRM'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
-                      await ref.read(authServiceProvider).enterDemoMode();
+                      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
+                      _invalidateAll(ref);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Demo Mode enabled — sample clients loaded'),
-                          ),
+                          const SnackBar(content: Text('Demo Mode enabled')),
                         );
-                        context.go('/clients');
+                        context.go('/dashboard');
                       }
                     },
                   ),
@@ -117,8 +131,12 @@ class SettingsScreen extends ConsumerWidget {
                   Text('About', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                   SizedBox(height: 8),
                   Text('TR Technology Solutions LLP', style: TextStyle(color: AppColors.textSecondary)),
-                  Text('Business Management Platform v1.0.0',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                  Text(
+                    'Business Management Platform v1.0.0\n'
+                    'Modules: Dashboard, Clients, Leads, Services, Projects,\n'
+                    'Invoices, Payments, Expenses, Tickets, Reports',
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.4),
+                  ),
                 ],
               ),
             ),

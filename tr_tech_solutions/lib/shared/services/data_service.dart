@@ -245,9 +245,12 @@ class SupabaseRepository implements AppRepository {
   }
 }
 
+final demoWorkspaceVersionProvider = StateProvider<int>((ref) => 0);
+
 final demoRepositoryProvider = Provider<DemoRepository>((ref) {
+  // Bumping demoWorkspaceVersionProvider recreates a fresh seeded workspace.
+  ref.watch(demoWorkspaceVersionProvider);
   final repo = DemoRepository();
-  // Keep the same seeded instance for the app lifetime.
   ref.keepAlive();
   return repo;
 });

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
+import 'package:tr_tech_solutions/shared/services/data_service.dart';
 
 const kDemoEmail = 'admin@trtechsolutions.com';
 const kDemoPassword = 'demo1234';
@@ -43,14 +45,18 @@ class AuthService {
     return email.trim().toLowerCase() == kDemoEmail && password == kDemoPassword;
   }
 
-  Future<void> enterDemoMode() async {
+  Future<void> enterDemoMode({bool resetWorkspace = false}) async {
+    if (resetWorkspace) {
+      _ref.read(demoWorkspaceVersionProvider.notifier).state++;
+      _ref.read(localClientsOverrideProvider.notifier).state = const [];
+    }
     _ref.read(demoModeProvider.notifier).state = true;
   }
 
   Future<void> signIn(String email, String password) async {
     // Built-in demo account always works, even when Supabase is configured.
     if (_isDemoCredentials(email, password) || !SupabaseConfig.isConfigured) {
-      await enterDemoMode();
+      await enterDemoMode(resetWorkspace: true);
       return;
     }
 

@@ -1,40 +1,71 @@
-# TR Technology Solutions LLP
+# TR Technology Solutions — Fully Working CRM
 
-Flutter + Supabase business management app.
+Flutter business CRM for **TR Technology Solutions LLP**.
 
-## Important
-
-Use this branch (not `main`):
+## Use this branch
 
 ```bash
 git fetch origin
 git checkout cursor/clickable-dashboard-2b7a
+git reset --hard origin/cursor/clickable-dashboard-2b7a
 cd tr_tech_solutions
+```
+
+## Run (recommended — works immediately)
+
+```bash
 flutter pub get
 flutter run -d chrome
 ```
 
-On login, tap **Continue with Demo Mode**  
-(or `admin@trtechsolutions.com` / `demo1234`)
+On the login screen tap **Continue with Demo Mode**.
 
-## What works now
+That loads a complete working workspace:
 
-- Modern teal UI
-- Add Client → auto-creates lead, project, invoice, payment, service, ticket
-- Open a client hub to see everything linked
+- Dashboard KPIs & charts
+- Clients (add client → auto-creates lead, project, invoice, payment, service, ticket)
+- Leads, Services, Projects
+- Invoices, Payments, Expenses, Tickets
+- Reports & Settings
+
+Demo login also works: `admin@trtechsolutions.com` / `demo1234`
+
+## Build Android APK
+
+```bash
+cd tr_tech_solutions
+flutter pub get
+flutter build apk --release
+```
+
+Install:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Requires **Gradle 8.11.1** (already set on this branch).
+
+## Host web online
+
+```bash
+flutter build web --release
+```
+
+Upload `build/web` to [Netlify Drop](https://app.netlify.com/drop).
+
+See `tr_tech_solutions/HOSTING.md`.
+
+## Live Supabase (optional)
+
+1. Put keys in `tr_tech_solutions/assets/supabase.env`
+2. Run `supabase/schema.sql` then `supabase/fix_missing.sql` in Supabase SQL Editor
+3. Sign up / sign in with a real account
+
+If the live backend errors, open **Settings → Switch to Demo Mode** for the full sample CRM.
 
 ## App folder
 
 ```text
 tr_tech_solutions/
 ```
-
-## Host online
-
-```bash
-cd tr_tech_solutions
-flutter build web --release
-# then drag build/web to https://app.netlify.com/drop
-```
-
-More: `tr_tech_solutions/HOSTING.md`

@@ -278,6 +278,7 @@ class DemoRepository implements AppRepository {
       LeadModel(
         id: 'l2',
         userId: _userId,
+        clientId: 'c2',
         name: 'Priya Patel',
         email: 'priya@retailco.in',
         company: 'RetailCo',
@@ -289,6 +290,7 @@ class DemoRepository implements AppRepository {
       LeadModel(
         id: 'l3',
         userId: _userId,
+        clientId: 'c1',
         name: 'Amit Kumar',
         email: 'amit@fintech.io',
         company: 'FinTech Solutions',
@@ -300,6 +302,7 @@ class DemoRepository implements AppRepository {
       LeadModel(
         id: 'l4',
         userId: _userId,
+        clientId: 'c4',
         name: 'Sneha Reddy',
         email: 'sneha@edutech.com',
         company: 'EduTech',
@@ -311,6 +314,7 @@ class DemoRepository implements AppRepository {
       LeadModel(
         id: 'l5',
         userId: _userId,
+        clientId: 'c3',
         name: 'Vikram Singh',
         email: 'vikram@logistics.in',
         company: 'Swift Logistics',
@@ -333,6 +337,7 @@ class DemoRepository implements AppRepository {
       LeadModel(
         id: 'l7',
         userId: _userId,
+        clientId: 'c5',
         name: 'Karan Mehta',
         email: 'karan@buildcorp.in',
         company: 'BuildCorp',

@@ -26,12 +26,19 @@ class ClientsScreen extends ConsumerWidget {
   const ClientsScreen({super.key});
 
   Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
-    await ref.read(authServiceProvider).enterDemoMode();
+    await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
     ref.invalidate(clientsProvider);
+    ref.invalidate(leadsProvider);
+    ref.invalidate(projectsProvider);
+    ref.invalidate(invoicesProvider);
+    ref.invalidate(paymentsProvider);
+    ref.invalidate(servicesProvider);
+    ref.invalidate(ticketsProvider);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Loaded sample clients in Demo Mode')),
       );
+      context.go('/dashboard');
     }
   }
 

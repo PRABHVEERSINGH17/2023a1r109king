@@ -68,7 +68,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _enterDemo() async {
     setState(() => _isLoading = true);
     try {
-      await ref.read(authServiceProvider).enterDemoMode();
+      // Fresh seeded workspace every time users enter from login.
+      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
       if (mounted) context.go('/dashboard');
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -213,24 +214,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 22),
             SizedBox(
               height: 48,
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
+                onPressed: _isLoading ? null : _enterDemo,
+                icon: const Icon(Icons.bolt_rounded),
+                label: const Text('Continue with Demo Mode'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Recommended — full CRM with sample clients, invoices & payments',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                fontFamily: AppTypography.body,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton(
                 onPressed: _isLoading ? null : _signIn,
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text('Sign In'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 48,
-              child: OutlinedButton.icon(
-                onPressed: _isLoading ? null : _enterDemo,
-                icon: const Icon(Icons.bolt_rounded),
-                label: const Text('Continue with Demo Mode'),
               ),
             ),
             const SizedBox(height: 14),

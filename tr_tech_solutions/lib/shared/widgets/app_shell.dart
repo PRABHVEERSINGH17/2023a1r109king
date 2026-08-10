@@ -112,60 +112,100 @@ class AppShell extends ConsumerWidget {
         child: child,
       ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _mobileIndex(currentRoute),
-        onDestinationSelected: (i) => context.go(_navItems[i].route),
-        destinations: _navItems.take(4).map((item) {
-          return NavigationDestination(
-            icon: Icon(item.icon),
-            selectedIcon: Icon(item.activeIcon),
-            label: item.label,
-          );
-        }).toList(),
+        selectedIndex: _mobileSelectedIndex(currentRoute),
+        onDestinationSelected: (i) {
+          if (i == 3) {
+            _showMobileMenu(context);
+            return;
+          }
+          context.go(_mobileRoutes[i]);
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people),
+            label: 'Clients',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.receipt_long_outlined),
+            selectedIcon: Icon(Icons.receipt_long),
+            label: 'Invoices',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_rounded),
+            selectedIcon: Icon(Icons.menu_open_rounded),
+            label: 'More',
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showMobileMenu(context),
-        child: const Icon(Icons.menu_rounded),
-      ),
+      floatingActionButton: null,
     );
   }
 
-  int _mobileIndex(String route) {
-    final index = _navItems.indexWhere((item) => item.route == route);
-    return index >= 0 && index < 4 ? index : 0;
+  static const _mobileRoutes = ['/dashboard', '/clients', '/invoices'];
+
+  int _mobileSelectedIndex(String route) {
+    if (route.startsWith('/clients')) return 1;
+    if (route.startsWith('/invoices')) return 2;
+    if (route == '/dashboard') return 0;
+    // Any other module → highlight More
+    return 3;
   }
 
   void _showMobileMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(4),
+        child: FractionallySizedBox(
+          heightFactor: 0.7,
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            ..._navItems.skip(4).map((item) {
-              return ListTile(
-                leading: Icon(item.icon, color: AppColors.primary),
-                title: Text(item.label, style: const TextStyle(fontFamily: AppTypography.body)),
-                onTap: () {
-                  Navigator.pop(context);
-                  context.go(item.route);
-                },
-              );
-            }),
-          ],
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'All modules',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTypography.display,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  children: _navItems.map((item) {
+                    return ListTile(
+                      leading: Icon(item.icon, color: AppColors.primary),
+                      title: Text(item.label, style: const TextStyle(fontFamily: AppTypography.body)),
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.go(item.route);
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
