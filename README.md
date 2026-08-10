@@ -33,22 +33,20 @@ That loads a complete working workspace:
 
 Demo login also works: `admin@trtechsolutions.com` / `demo1234`
 
-## Build Android APK
+## Android app (real APK — not a website)
+
+Installable app file:
+
+```text
+tr_tech_solutions/release/TR-Tech-Solutions.apk
+```
 
 ```bash
 cd tr_tech_solutions
-chmod +x scripts/build_apk.sh
-./scripts/build_apk.sh
+adb install -r release/TR-Tech-Solutions.apk
 ```
 
-Install:
-
-```text
-build/app/outputs/flutter-apk/app-release.apk
-```
-
-Needs **Java 17+**, Android SDK **API 34**, and this branch’s **Gradle 8.11.1**.  
-If build fails on Ubuntu’s `/usr/lib/android-sdk`, read `tr_tech_solutions/FIX_ANDROID_BUILD.md`.
+Or copy that APK to your phone and open it. Full steps: `tr_tech_solutions/ANDROID_APP.md`.
 
 ## Host web online
 
