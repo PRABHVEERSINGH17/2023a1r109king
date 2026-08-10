@@ -1,5 +1,5 @@
-# Local overrides with real secrets (optional)
-assets/.env.local
+# Local secrets — do not commit real keys
+assets/.env
 
 *.class
 *.log

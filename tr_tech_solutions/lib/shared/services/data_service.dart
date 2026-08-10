@@ -23,8 +23,44 @@ class SupabaseRepository implements AppRepository {
   Future<DashboardStats> getDashboardStats() async {
     final userId = _userId;
     if (userId == null) return const DashboardStats();
-    final result = await _client.rpc('get_dashboard_stats', params: {'p_user_id': userId});
-    return DashboardStats.fromJson(result as Map<String, dynamic>);
+
+    try {
+      final result =
+          await _client.rpc('get_dashboard_stats', params: {'p_user_id': userId});
+      return DashboardStats.fromJson(result as Map<String, dynamic>);
+    } catch (_) {
+      // Fallback when RPC is not installed yet
+      final clients = await getClients();
+      final services = await getServices();
+      final invoices = await getInvoices();
+      final leads = await getLeads();
+      final payments = await getPayments();
+      List<TicketModel> tickets = const [];
+      try {
+        tickets = await getTickets();
+      } catch (_) {}
+
+      final pending = invoices.where((i) => i.status == 'pending');
+      final overdue = invoices.where((i) => i.status == 'overdue');
+      final revenue = payments.fold<double>(
+        0,
+        (sum, p) => sum + ((p['amount'] as num?)?.toDouble() ?? 0),
+      );
+
+      return DashboardStats(
+        totalRevenue: revenue,
+        totalClients: clients.where((c) => c.status == 'active').length,
+        activeServices: services.where((s) => s.status == 'active').length,
+        pendingInvoicesCount: pending.length,
+        pendingInvoicesAmount: pending.fold(0, (s, i) => s + i.total),
+        overdueInvoicesCount: overdue.length,
+        overdueInvoicesAmount: overdue.fold(0, (s, i) => s + i.total),
+        openTickets: tickets
+            .where((t) => t.status == 'open' || t.status == 'in_progress')
+            .length,
+        totalLeads: leads.length,
+      );
+    }
   }
 
   @override
@@ -142,11 +178,15 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<List<TicketModel>> getTickets() async {
-    final response = await _client
-        .from('tickets')
-        .select('*, clients(name)')
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => TicketModel.fromJson(e)).toList();
+    try {
+      final response = await _client
+          .from('tickets')
+          .select('*, clients(name)')
+          .order('created_at', ascending: false);
+      return (response as List).map((e) => TicketModel.fromJson(e)).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   @override

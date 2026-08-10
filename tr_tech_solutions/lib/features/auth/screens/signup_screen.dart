@@ -45,7 +45,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Account created! You can now sign in.'),
+              content: Text(
+                'Account created! Confirm your email in inbox (if required), then sign in.',
+              ),
             ),
           );
           context.go('/login');

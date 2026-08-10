@@ -36,28 +36,24 @@ On the login screen:
 
 The app ships with full sample data (clients, invoices, leads, services, tickets, etc.) so every screen works out of the box.
 
-## Connect your Supabase backend (optional)
+## Connect your Supabase backend
 
-### 1. Run the database schema
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql)
-3. Copy **Project URL** and **anon key** from **Settings → API**
-
-### 2. Add credentials
-
-Edit `assets/.env`:
+Credentials go in `assets/.env` (gitignored):
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 3. Enable Email Auth
+### Database setup
 
-Authentication → Providers → Email → enable. Disable **Confirm email** for local development.
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run [`supabase/schema.sql`](supabase/schema.sql) in **SQL Editor**
+3. If tables already exist, run [`supabase/fix_missing.sql`](supabase/fix_missing.sql) for tickets + dashboard stats
+4. Enable Email auth: Authentication → Providers → Email
+5. For faster local testing, disable **Confirm email** under Auth settings
 
-### 4. Restart the app
+Then restart:
 
 ```bash
 flutter run -d chrome
