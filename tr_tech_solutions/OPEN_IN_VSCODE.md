@@ -1,37 +1,54 @@
-# Open this project in Visual Studio Code
+# Open in Visual Studio Code
 
-## Fix for "No file or variants found for asset: assets/.env"
+## Quick start
 
-This is fixed. The app now uses `assets/supabase.env` (committed with your Supabase keys).
-
-## Steps
-
-1. Pull latest code:
 ```bash
 git clone https://github.com/PRABHVEERSINGH17/2023a1r109king.git
 cd 2023a1r109king
-git checkout cursor/tr-tech-demo-mode-2b7a
-git pull
+git checkout cursor/fix-vscode-env-error-2b7a
 code tr_tech_solutions
 ```
 
-2. In VS Code install **Dart** + **Flutter** extensions
+Or: **File → Open Folder…** → select `tr_tech_solutions`
 
-3. In terminal:
+## First time setup
+
+1. Install extensions when prompted: **Dart** + **Flutter**
+2. Open VS Code terminal (`Ctrl + `` `) and run:
+
 ```bash
+flutter pub get
+```
+
+3. Press **F5** and choose **TR Tech (Chrome)**
+
+## Supabase config (already set)
+
+Credentials are in:
+
+`assets/supabase.env`
+
+```env
+SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
+SUPABASE_ANON_KEY=...
+```
+
+No need to create `assets/.env` anymore.
+
+## Login
+
+- Click **Explore Demo Dashboard**, or
+- Sign Up / Sign In with your email
+
+## If you get an old error about assets/.env
+
+You are on an old branch. Update:
+
+```bash
+git fetch origin
+git checkout cursor/fix-vscode-env-error-2b7a
+git pull
+flutter clean
 flutter pub get
 flutter run -d chrome
 ```
-
-Or press **F5** → **TR Tech (Chrome)**
-
-4. On login click **Explore Demo Dashboard** or Sign Up with your email
-
-## If you still see CardTheme errors
-
-Your Flutter SDK may be newer. Run:
-```bash
-flutter --version
-flutter upgrade
-```
-Then in `lib/core/theme/app_theme.dart` change `CardTheme(` to `CardThemeData(` if VS Code suggests it.

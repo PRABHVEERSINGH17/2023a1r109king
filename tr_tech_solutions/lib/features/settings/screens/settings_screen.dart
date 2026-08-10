@@ -67,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
                         ? 'Demo mode (local sample data)'
                         : SupabaseConfig.isConfigured
                             ? 'Connected to Supabase'
-                            : 'Not configured - update assets/.env',
+                            : 'Not configured - update assets/supabase.env',
                     style: TextStyle(
                       color: isDemo || SupabaseConfig.isConfigured
                           ? AppColors.success

@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "flutter pub get",
+      "type": "shell",
+      "command": "flutter pub get",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter clean",
+      "type": "shell",
+      "command": "flutter clean && flutter pub get",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter run chrome",
+      "type": "shell",
+      "command": "flutter run -d chrome",
+      "problemMatcher": []
+    }
+  ]
+}

@@ -145,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     border: Border.all(color: AppColors.info.withOpacity(0.3)),
                   ),
                   child: const Text(
-                    'Running with demo data. Add Supabase credentials in assets/.env to connect your backend.',
+                    'Running with demo data. Credentials are in assets/supabase.env for live Supabase.',
                     style: TextStyle(color: AppColors.info, fontSize: 12),
                   ),
                 ),
