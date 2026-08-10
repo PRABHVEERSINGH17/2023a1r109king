@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SupabaseConfig {
@@ -26,4 +27,15 @@ class SupabaseConfig {
       !url.contains('your-project') &&
       !anonKey.contains('YOUR_SUPABASE') &&
       !anonKey.contains('your-anon-key');
+
+  /// Deep link used to return into the Android/iOS app after OAuth.
+  static const mobileOAuthRedirect = 'com.trtechsolutions.app://login-callback/';
+
+  /// Redirect URL passed to Supabase OAuth (web origin or mobile deep link).
+  static String get oauthRedirectTo {
+    if (kIsWeb) {
+      return Uri.base.origin;
+    }
+    return mobileOAuthRedirect;
+  }
 }

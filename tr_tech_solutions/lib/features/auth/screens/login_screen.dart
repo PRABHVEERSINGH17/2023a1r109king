@@ -6,6 +6,7 @@ import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
+import 'package:tr_tech_solutions/features/auth/widgets/social_auth_buttons.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -244,6 +245,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     : const Text('Sign In'),
               ),
             ),
+            const SizedBox(height: 18),
+            const SocialAuthButtons(),
             const SizedBox(height: 14),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

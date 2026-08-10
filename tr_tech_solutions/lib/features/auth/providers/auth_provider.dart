@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
@@ -10,6 +11,8 @@ import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 
 const kDemoEmail = 'admin@trtechsolutions.com';
 const kDemoPassword = 'demo1234';
+
+enum SocialAuthProvider { google, apple, linkedin }
 
 final authStateProvider = StreamProvider<AuthState>((ref) {
   if (!SupabaseConfig.isConfigured) {
@@ -87,6 +90,63 @@ class AuthService {
     // If email confirmation is disabled, session is returned immediately.
     if (response.session != null) {
       return;
+    }
+  }
+
+  /// Starts Google / Apple / LinkedIn OAuth via Supabase.
+  ///
+  /// Returns when the browser/auth sheet has been opened. The actual session
+  /// arrives later through [authStateProvider] — callers should wait for it.
+  Future<void> signInWithSocial(SocialAuthProvider provider) async {
+    if (!SupabaseConfig.isConfigured) {
+      throw StateError(
+        'Social login needs Supabase. Open SOCIAL_LOGIN.md to enable Google, Apple, and LinkedIn, '
+        'or use Demo Mode.',
+      );
+    }
+
+    await DemoPersistence.setDemoMode(false);
+    _ref.read(demoModeProvider.notifier).state = false;
+
+    final oauthProvider = switch (provider) {
+      SocialAuthProvider.google => OAuthProvider.google,
+      SocialAuthProvider.apple => OAuthProvider.apple,
+      // Prefer LinkedIn OIDC (current Supabase provider).
+      SocialAuthProvider.linkedin => OAuthProvider.linkedinOidc,
+    };
+
+    final launched = await Supabase.instance.client.auth.signInWithOAuth(
+      oauthProvider,
+      redirectTo: SupabaseConfig.oauthRedirectTo,
+      authScreenLaunchMode: kIsWeb
+          ? LaunchMode.platformDefault
+          : LaunchMode.externalApplication,
+    );
+
+    if (!launched) {
+      throw StateError('Could not open the ${provider.name} sign-in page.');
+    }
+  }
+
+  /// Waits until a Supabase session exists (after OAuth redirect) or times out.
+  Future<bool> waitForSession({
+    Duration timeout = const Duration(minutes: 2),
+  }) async {
+    if (!SupabaseConfig.isConfigured) return false;
+    if (Supabase.instance.client.auth.currentSession != null) return true;
+
+    final completer = Completer<bool>();
+    late final StreamSubscription<AuthState> sub;
+    sub = Supabase.instance.client.auth.onAuthStateChange.listen((state) {
+      if (state.session != null && !completer.isCompleted) {
+        completer.complete(true);
+      }
+    });
+
+    try {
+      return await completer.future.timeout(timeout, onTimeout: () => false);
+    } finally {
+      await sub.cancel();
     }
   }
 

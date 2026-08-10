@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
+import 'package:tr_tech_solutions/features/auth/widgets/social_auth_buttons.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -165,6 +166,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                               : const Text('Create Account'),
                         ),
                       ),
+                      const SizedBox(height: 18),
+                      const SocialAuthButtons(),
                       const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

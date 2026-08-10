@@ -63,6 +63,11 @@ See `tr_tech_solutions/HOSTING.md`.
 2. Run `supabase/schema.sql` then `supabase/fix_missing.sql` in Supabase SQL Editor
 3. Sign up / sign in with a real account
 
+### Social login (Google / Apple / LinkedIn)
+
+Buttons are on the login screen. Enable providers once in Supabase — see  
+`tr_tech_solutions/SOCIAL_LOGIN.md`.
+
 If the live backend errors, open **Settings → Switch to Demo Mode** for the full sample CRM.
 
 ## App folder
