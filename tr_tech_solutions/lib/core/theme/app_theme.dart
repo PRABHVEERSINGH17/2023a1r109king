@@ -38,7 +38,9 @@ class AppTheme {
           color: AppColors.textPrimary,
         ),
       ),
-      cardTheme: CardTheme(
+      // Prefer copyWith on the SDK default so this compiles on both older Flutter
+      // (CardTheme data class) and newer Flutter (CardThemeData / DialogThemeData).
+      cardTheme: ThemeData(useMaterial3: true).cardTheme.copyWith(
         color: AppColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
@@ -156,7 +158,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         elevation: 2,
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: ThemeData(useMaterial3: true).dialogTheme.copyWith(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
