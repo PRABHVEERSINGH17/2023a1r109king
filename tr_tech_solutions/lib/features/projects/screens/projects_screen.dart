@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/models/project.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
-import 'package:tr_tech_solutions/shared/widgets/client_picker.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
@@ -30,7 +30,7 @@ class ProjectsScreen extends ConsumerWidget {
             title: 'Projects',
             subtitle: 'Track project progress and deliverables',
             action: ElevatedButton.icon(
-              onPressed: () => _showProjectDialog(context, ref),
+              onPressed: () => showLinkedProjectDialog(context, ref),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Project'),
             ),
@@ -46,7 +46,7 @@ class ProjectsScreen extends ConsumerWidget {
                     icon: Icons.folder_outlined,
                     title: 'No projects yet',
                     actionLabel: 'Add Project',
-                    onAction: () => _showProjectDialog(context, ref),
+                    onAction: () => showLinkedProjectDialog(context, ref),
                   );
                 }
                 return DataListCard(
@@ -84,95 +84,6 @@ class ProjectsScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showProjectDialog(BuildContext context, WidgetRef ref) async {
-    final titleController = TextEditingController();
-    final budgetController = TextEditingController();
-    var status = 'in_progress';
-    String? clientId;
-    DateTime? dueDate;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Add Project'),
-          content: SizedBox(
-            width: 400,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClientPickerField(
-                    value: clientId,
-                    onChanged: (v) => setState(() => clientId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title *')),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: budgetController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Budget', prefixText: '₹ '),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: status,
-                    decoration: const InputDecoration(labelText: 'Status'),
-                    items: const [
-                      DropdownMenuItem(value: 'planning', child: Text('Planning')),
-                      DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
-                      DropdownMenuItem(value: 'review', child: Text('Review')),
-                      DropdownMenuItem(value: 'completed', child: Text('Completed')),
-                    ],
-                    onChanged: (v) => setState(() => status = v ?? 'in_progress'),
-                  ),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(dueDate == null ? 'Select Due Date' : 'Due: ${Formatters.formatDate(dueDate)}'),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: ctx,
-                        initialDate: DateTime.now().add(const Duration(days: 30)),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null) setState(() => dueDate = date);
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (titleController.text.isEmpty || clientId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Select a client and enter a title')),
-                  );
-                  return;
-                }
-                await ref.read(dataServiceProvider)?.createProject({
-                  'client_id': clientId,
-                  'title': titleController.text.trim(),
-                  'budget': double.tryParse(budgetController.text) ?? 0,
-                  'status': status,
-                  'due_date': dueDate?.toIso8601String().split('T').first,
-                });
-                ref.invalidate(projectsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        ),
       ),
     );
   }

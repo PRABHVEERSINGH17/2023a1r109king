@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
-import 'package:tr_tech_solutions/shared/widgets/client_picker.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
@@ -30,7 +30,7 @@ class ServicesScreen extends ConsumerWidget {
             title: 'Services',
             subtitle: 'Manage domains, hosting, and other services',
             action: ElevatedButton.icon(
-              onPressed: () => _showServiceDialog(context, ref),
+              onPressed: () => showLinkedServiceDialog(context, ref),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Add Service'),
             ),
@@ -46,7 +46,7 @@ class ServicesScreen extends ConsumerWidget {
                     icon: Icons.dns_outlined,
                     title: 'No services yet',
                     actionLabel: 'Add Service',
-                    onAction: () => _showServiceDialog(context, ref),
+                    onAction: () => showLinkedServiceDialog(context, ref),
                   );
                 }
                 return DataListCard(
@@ -86,105 +86,6 @@ class ServicesScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showServiceDialog(BuildContext context, WidgetRef ref) async {
-    final nameController = TextEditingController();
-    final providerController = TextEditingController();
-    var type = 'domain';
-    var status = 'active';
-    String? clientId;
-    DateTime? expiryDate;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Add Service'),
-          content: SizedBox(
-            width: 400,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClientPickerField(
-                    value: clientId,
-                    onChanged: (v) => setState(() => clientId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Service Name *')),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: type,
-                    decoration: const InputDecoration(labelText: 'Type'),
-                    items: const [
-                      DropdownMenuItem(value: 'domain', child: Text('Domain')),
-                      DropdownMenuItem(value: 'hosting', child: Text('Hosting')),
-                      DropdownMenuItem(value: 'website', child: Text('Website')),
-                      DropdownMenuItem(value: 'ssl', child: Text('SSL Certificate')),
-                      DropdownMenuItem(value: 'email', child: Text('Email')),
-                      DropdownMenuItem(value: 'other', child: Text('Other')),
-                    ],
-                    onChanged: (v) => setState(() => type = v ?? 'domain'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(controller: providerController, decoration: const InputDecoration(labelText: 'Provider')),
-                  const SizedBox(height: 12),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(expiryDate == null ? 'Select Expiry Date' : Formatters.formatDate(expiryDate)),
-                    trailing: const Icon(Icons.calendar_today),
-                    onTap: () async {
-                      final date = await showDatePicker(
-                        context: ctx,
-                        initialDate: DateTime.now().add(const Duration(days: 365)),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 3650)),
-                      );
-                      if (date != null) setState(() => expiryDate = date);
-                    },
-                  ),
-                  DropdownButtonFormField<String>(
-                    value: status,
-                    decoration: const InputDecoration(labelText: 'Status'),
-                    items: const [
-                      DropdownMenuItem(value: 'active', child: Text('Active')),
-                      DropdownMenuItem(value: 'expiring', child: Text('Expiring')),
-                      DropdownMenuItem(value: 'expired', child: Text('Expired')),
-                    ],
-                    onChanged: (v) => setState(() => status = v ?? 'active'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isEmpty || clientId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Select a client and enter service name')),
-                  );
-                  return;
-                }
-                await ref.read(dataServiceProvider)?.createService({
-                  'client_id': clientId,
-                  'name': nameController.text.trim(),
-                  'type': type,
-                  'provider': providerController.text.trim().isEmpty ? null : providerController.text.trim(),
-                  'expiry_date': expiryDate?.toIso8601String().split('T').first,
-                  'status': status,
-                });
-                ref.invalidate(servicesProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Add'),
-            ),
-          ],
-        ),
       ),
     );
   }

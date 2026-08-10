@@ -39,8 +39,8 @@ class ClientsScreen extends ConsumerWidget {
           PageHeader(
             title: 'Clients',
             subtitle: isDemo
-                ? 'Sample demo clients — ready to explore'
-                : 'Manage your client relationships',
+                ? 'Open a client to see linked invoices, payments, projects & more'
+                : 'Open a client hub to manage invoices, payments, projects & tickets',
             action: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

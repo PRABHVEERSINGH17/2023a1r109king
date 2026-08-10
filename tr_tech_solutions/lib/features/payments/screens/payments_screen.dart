@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
-import 'package:tr_tech_solutions/shared/widgets/client_picker.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 
@@ -28,7 +28,7 @@ class PaymentsScreen extends ConsumerWidget {
             title: 'Payments',
             subtitle: 'Track received payments',
             action: ElevatedButton.icon(
-              onPressed: () => _showPaymentDialog(context, ref),
+              onPressed: () => showLinkedPaymentDialog(context, ref),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Record Payment'),
             ),
@@ -44,7 +44,7 @@ class PaymentsScreen extends ConsumerWidget {
                     icon: Icons.payment_outlined,
                     title: 'No payments recorded',
                     actionLabel: 'Record Payment',
-                    onAction: () => _showPaymentDialog(context, ref),
+                    onAction: () => showLinkedPaymentDialog(context, ref),
                   );
                 }
                 return DataListCard(
@@ -78,79 +78,6 @@ class PaymentsScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showPaymentDialog(BuildContext context, WidgetRef ref) async {
-    final amountController = TextEditingController();
-    final referenceController = TextEditingController();
-    var method = 'bank_transfer';
-    String? clientId;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Record Payment'),
-          content: SizedBox(
-            width: 400,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClientPickerField(
-                    value: clientId,
-                    onChanged: (v) => setState(() => clientId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Amount *', prefixText: '₹ '),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: method,
-                    decoration: const InputDecoration(labelText: 'Method'),
-                    items: const [
-                      DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer')),
-                      DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                      DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                      DropdownMenuItem(value: 'card', child: Text('Card')),
-                      DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
-                    ],
-                    onChanged: (v) => setState(() => method = v ?? 'bank_transfer'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(controller: referenceController, decoration: const InputDecoration(labelText: 'Reference')),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (amountController.text.isEmpty || clientId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Select a client and enter amount')),
-                  );
-                  return;
-                }
-                await ref.read(dataServiceProvider)?.createPayment({
-                  'client_id': clientId,
-                  'amount': double.tryParse(amountController.text) ?? 0,
-                  'method': method,
-                  'reference': referenceController.text.trim().isEmpty ? null : referenceController.text.trim(),
-                });
-                ref.invalidate(paymentsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Record'),
-            ),
-          ],
-        ),
       ),
     );
   }

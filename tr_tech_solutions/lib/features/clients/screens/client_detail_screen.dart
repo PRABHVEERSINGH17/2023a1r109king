@@ -5,6 +5,7 @@ import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
 import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
 import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart';
@@ -18,6 +19,15 @@ class ClientDetailScreen extends ConsumerWidget {
   final String clientId;
 
   const ClientDetailScreen({super.key, required this.clientId});
+
+  Future<void> _refresh(WidgetRef ref) async {
+    ref.invalidate(projectsProvider);
+    ref.invalidate(invoicesProvider);
+    ref.invalidate(servicesProvider);
+    ref.invalidate(ticketsProvider);
+    ref.invalidate(paymentsProvider);
+    ref.invalidate(clientsProvider);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -47,26 +57,17 @@ class ClientDetailScreen extends ConsumerWidget {
           );
         }
 
-        final projects = projectsAsync.valueOrNull
-                ?.where((p) => p.clientId == clientId)
-                .toList() ??
-            const [];
-        final invoices = invoicesAsync.valueOrNull
-                ?.where((i) => i.clientId == clientId)
-                .toList() ??
-            const [];
-        final services = servicesAsync.valueOrNull
-                ?.where((s) => s.clientId == clientId)
-                .toList() ??
-            const [];
-        final tickets = ticketsAsync.valueOrNull
-                ?.where((t) => t.clientId == clientId)
-                .toList() ??
-            const [];
-        final payments = paymentsAsync.valueOrNull
-                ?.where((p) => p['client_id'] == clientId)
-                .toList() ??
-            const [];
+        final projects =
+            projectsAsync.valueOrNull?.where((p) => p.clientId == clientId).toList() ?? const [];
+        final invoices =
+            invoicesAsync.valueOrNull?.where((i) => i.clientId == clientId).toList() ?? const [];
+        final services =
+            servicesAsync.valueOrNull?.where((s) => s.clientId == clientId).toList() ?? const [];
+        final tickets =
+            ticketsAsync.valueOrNull?.where((t) => t.clientId == clientId).toList() ?? const [];
+        final payments =
+            paymentsAsync.valueOrNull?.where((p) => p['client_id'] == clientId).toList() ??
+                const [];
 
         final paidTotal = payments.fold<double>(
           0,
@@ -111,6 +112,58 @@ class ClientDetailScreen extends ConsumerWidget {
                   StatusBadge(status: client.status),
                 ],
               ),
+              const SizedBox(height: 12),
+              const Text(
+                'Everything below belongs to this client — invoices, payments, projects, services, and tickets.',
+                style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      await showLinkedInvoiceDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    icon: const Icon(Icons.receipt_long, size: 18),
+                    label: const Text('Add Invoice'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await showLinkedPaymentDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    icon: const Icon(Icons.payment, size: 18),
+                    label: const Text('Add Payment'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await showLinkedProjectDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    icon: const Icon(Icons.folder, size: 18),
+                    label: const Text('Add Project'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await showLinkedServiceDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    icon: const Icon(Icons.dns, size: 18),
+                    label: const Text('Add Service'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await showLinkedTicketDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    icon: const Icon(Icons.support_agent, size: 18),
+                    label: const Text('Add Ticket'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 12,
@@ -127,6 +180,10 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: 'Projects',
                 empty: projects.isEmpty,
+                onAdd: () async {
+                  await showLinkedProjectDialog(context, ref, clientId: clientId);
+                  await _refresh(ref);
+                },
                 children: projects
                     .map(
                       (p) => ListTile(
@@ -141,6 +198,10 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: 'Invoices',
                 empty: invoices.isEmpty,
+                onAdd: () async {
+                  await showLinkedInvoiceDialog(context, ref, clientId: clientId);
+                  await _refresh(ref);
+                },
                 children: invoices
                     .map(
                       (i) => ListTile(
@@ -155,6 +216,10 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: 'Services',
                 empty: services.isEmpty,
+                onAdd: () async {
+                  await showLinkedServiceDialog(context, ref, clientId: clientId);
+                  await _refresh(ref);
+                },
                 children: services
                     .map(
                       (s) => ListTile(
@@ -169,11 +234,17 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: 'Payments',
                 empty: payments.isEmpty,
+                onAdd: () async {
+                  await showLinkedPaymentDialog(context, ref, clientId: clientId);
+                  await _refresh(ref);
+                },
                 children: payments
                     .map(
                       (p) => ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: Text(Formatters.formatCurrency((p['amount'] as num?)?.toDouble() ?? 0)),
+                        title: Text(
+                          Formatters.formatCurrency((p['amount'] as num?)?.toDouble() ?? 0),
+                        ),
                         subtitle: Text(p['method']?.toString() ?? '-'),
                         trailing: Text(
                           Formatters.formatDate(
@@ -187,6 +258,10 @@ class ClientDetailScreen extends ConsumerWidget {
               _Section(
                 title: 'Tickets',
                 empty: tickets.isEmpty,
+                onAdd: () async {
+                  await showLinkedTicketDialog(context, ref, clientId: clientId);
+                  await _refresh(ref);
+                },
                 children: tickets
                     .map(
                       (t) => ListTile(
@@ -244,11 +319,13 @@ class _Section extends StatelessWidget {
   final String title;
   final bool empty;
   final List<Widget> children;
+  final VoidCallback? onAdd;
 
   const _Section({
     required this.title,
     required this.empty,
     required this.children,
+    this.onAdd,
   });
 
   @override
@@ -264,17 +341,32 @@ class _Section extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontFamily: AppTypography.display,
-              fontSize: 16,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTypography.display,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              if (onAdd != null)
+                TextButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Add'),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           if (empty)
-            const Text('No linked records yet', style: TextStyle(color: AppColors.textMuted))
+            const Text(
+              'No linked records yet — tap Add to create one for this client',
+              style: TextStyle(color: AppColors.textMuted),
+            )
           else
             ...children,
         ],

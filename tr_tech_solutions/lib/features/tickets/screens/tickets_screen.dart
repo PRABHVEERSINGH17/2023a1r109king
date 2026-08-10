@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
-import 'package:tr_tech_solutions/shared/widgets/client_picker.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
@@ -30,7 +30,7 @@ class TicketsScreen extends ConsumerWidget {
             title: 'Support Tickets',
             subtitle: 'Manage client support requests',
             action: ElevatedButton.icon(
-              onPressed: () => _showTicketDialog(context, ref),
+              onPressed: () => showLinkedTicketDialog(context, ref),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Create Ticket'),
             ),
@@ -46,7 +46,7 @@ class TicketsScreen extends ConsumerWidget {
                     icon: Icons.support_agent_outlined,
                     title: 'No tickets yet',
                     actionLabel: 'Create Ticket',
-                    onAction: () => _showTicketDialog(context, ref),
+                    onAction: () => showLinkedTicketDialog(context, ref),
                   );
                 }
                 return DataListCard(
@@ -101,78 +101,6 @@ class TicketsScreen extends ConsumerWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showTicketDialog(BuildContext context, WidgetRef ref) async {
-    final numberController = TextEditingController(text: 'TKT-${DateTime.now().millisecondsSinceEpoch % 10000}');
-    final subjectController = TextEditingController();
-    final descController = TextEditingController();
-    var priority = 'medium';
-    String? clientId;
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Create Ticket'),
-          content: SizedBox(
-            width: 400,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ClientPickerField(
-                    value: clientId,
-                    onChanged: (v) => setState(() => clientId = v),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(controller: numberController, decoration: const InputDecoration(labelText: 'Ticket Number *')),
-                  const SizedBox(height: 12),
-                  TextField(controller: subjectController, decoration: const InputDecoration(labelText: 'Subject *')),
-                  const SizedBox(height: 12),
-                  TextField(controller: descController, maxLines: 3, decoration: const InputDecoration(labelText: 'Description')),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: priority,
-                    decoration: const InputDecoration(labelText: 'Priority'),
-                    items: const [
-                      DropdownMenuItem(value: 'low', child: Text('Low')),
-                      DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                      DropdownMenuItem(value: 'high', child: Text('High')),
-                      DropdownMenuItem(value: 'urgent', child: Text('Urgent')),
-                    ],
-                    onChanged: (v) => setState(() => priority = v ?? 'medium'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (subjectController.text.isEmpty || clientId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Select a client and enter subject')),
-                  );
-                  return;
-                }
-                await ref.read(dataServiceProvider)?.createTicket({
-                  'client_id': clientId,
-                  'ticket_number': numberController.text.trim(),
-                  'subject': subjectController.text.trim(),
-                  'description': descController.text.trim().isEmpty ? null : descController.text.trim(),
-                  'priority': priority,
-                });
-                ref.invalidate(ticketsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Create'),
-            ),
-          ],
-        ),
       ),
     );
   }
