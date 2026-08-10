@@ -5,6 +5,7 @@ import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
+import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/features/dashboard/screens/dashboard_screen.dart';
 import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
@@ -69,6 +70,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final email = ref.watch(authServiceProvider).currentUserEmail ?? 'Not logged in';
     final isDemo = ref.watch(demoModeProvider);
+    final isLocal = ref.watch(localAuthProvider);
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -99,16 +101,22 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: Icon(
-                    isDemo ? Icons.science_outlined : Icons.cloud_done_outlined,
+                    isDemo
+                        ? Icons.science_outlined
+                        : isLocal
+                            ? Icons.phone_android_outlined
+                            : Icons.cloud_done_outlined,
                     color: AppColors.primary,
                   ),
                   title: const Text('Workspace Mode'),
                   subtitle: Text(
                     isDemo
                         ? 'Demo Mode — sample data on this device'
-                        : SupabaseConfig.isConfigured
-                            ? 'Online — live Supabase backend'
-                            : 'Online preferred — configure Supabase to sync data',
+                        : isLocal
+                            ? 'Signed in on this device (email/password)'
+                            : SupabaseConfig.isConfigured
+                                ? 'Online — live Supabase backend'
+                                : 'Online preferred — configure Supabase to sync data',
                   ),
                 ),
                 if (isDemo) ...[

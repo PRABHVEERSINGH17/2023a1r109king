@@ -4,17 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_theme.dart';
 import 'package:tr_tech_solutions/router/app_router.dart';
 import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
+import 'package:tr_tech_solutions/shared/services/local_account_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Restore Demo Mode + saved clients/invoices before the first frame.
+  // Restore Demo Mode / local accounts before the first frame.
   await DemoPersistence.init();
+  await LocalAccountStore.init();
 
-  // Optional live backend keys. Demo Mode works with or without this file.
+  // Optional live backend keys. Demo Mode + local accounts work without this.
   try {
     await dotenv.load(fileName: 'assets/supabase.env');
   } catch (_) {
@@ -31,15 +34,15 @@ Future<void> main() async {
         ),
       );
     } catch (_) {
-      // Continue — Demo Mode remains fully usable.
+      // Continue — Demo Mode / local auth remain fully usable.
     }
   }
 
   runApp(
     ProviderScope(
       overrides: [
-        // Keep the user in Demo Mode across browser/app refresh.
         demoModeProvider.overrideWith((ref) => DemoPersistence.isDemoMode),
+        localAuthProvider.overrideWith((ref) => LocalAccountStore.hasSession),
       ],
       child: const TrTechApp(),
     ),

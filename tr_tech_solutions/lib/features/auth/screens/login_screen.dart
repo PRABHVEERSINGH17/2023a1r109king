@@ -197,9 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               child: Text(
                 _onlineMode
-                    ? (SupabaseConfig.isConfigured
-                        ? 'Online mode: use Sign Up with your email, or Google / Apple / LinkedIn.\nThen add your real clients — data saves to the cloud.'
-                        : 'Supabase keys missing. Add them in assets/supabase.env (see GO_ONLINE.md), or use Demo Mode.')
+                    ? 'Create an account with your email — Sign Up works on this device even if cloud email is blocked.\nGoogle/Apple/LinkedIn need Supabase providers enabled.'
                     : (SupabaseConfig.isConfigured
                         ? 'Demo: admin@trtechsolutions.com / demo1234\nOr continue with Demo Mode instantly.'
                         : 'Demo Mode is ready — explore the full workspace with sample data.'),

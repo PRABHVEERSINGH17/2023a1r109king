@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
 import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
+import 'package:tr_tech_solutions/shared/services/local_account_store.dart';
 
 void main() {
   test('demo repository returns seeded clients and stats', () async {
@@ -172,5 +173,24 @@ void main() {
     final restored = DemoRepository(snapshot: DemoPersistence.workspace);
     final clients = await restored.getClients();
     expect(clients.any((c) => c.id == created.id && c.name == 'Device Client'), isTrue);
+  });
+  test('local account signup and signin works offline', () async {
+    SharedPreferences.setMockInitialValues({});
+    await LocalAccountStore.init();
+    await LocalAccountStore.clearSession();
+
+    await LocalAccountStore.signUp(
+      email: 'owner@trtech.com',
+      password: 'secret12',
+      fullName: 'Owner',
+    );
+    expect(LocalAccountStore.hasSession, isTrue);
+    expect(LocalAccountStore.sessionEmail, 'owner@trtech.com');
+
+    await LocalAccountStore.clearSession();
+    expect(LocalAccountStore.hasSession, isFalse);
+
+    await LocalAccountStore.signIn(email: 'owner@trtech.com', password: 'secret12');
+    expect(LocalAccountStore.hasSession, isTrue);
   });
 }

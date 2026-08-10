@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
@@ -20,6 +21,16 @@ import 'package:tr_tech_solutions/features/settings/screens/settings_screen.dart
 import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/widgets/app_shell.dart';
 
+bool _hasSupabaseSession() {
+  if (!SupabaseConfig.isConfigured) return false;
+  try {
+    // Prefer the live client session — StreamProvider can lag one frame after login.
+    return Supabase.instance.client.auth.currentSession != null;
+  } catch (_) {
+    return false;
+  }
+}
+
 /// Stable GoRouter instance. Auth/demo changes refresh redirects without
 /// recreating the router (recreating was resetting navigation and breaking
 /// the dashboard).
@@ -33,8 +44,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final isDemo = ref.read(demoModeProvider);
       final authState = ref.read(authStateProvider);
-      final supabaseLoggedIn =
-          SupabaseConfig.isConfigured && authState.valueOrNull?.session != null;
+      final streamSession = authState.valueOrNull?.session != null;
+      final supabaseLoggedIn = _hasSupabaseSession() || streamSession;
       final isLoggedIn = isDemo || supabaseLoggedIn;
       final isAuthRoute =
           state.matchedLocation == '/login' || state.matchedLocation == '/signup';
@@ -77,5 +88,12 @@ class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(Ref ref) {
     ref.listen(demoModeProvider, (_, __) => notifyListeners());
     ref.listen(authStateProvider, (_, __) => notifyListeners());
+    if (SupabaseConfig.isConfigured) {
+      try {
+        Supabase.instance.client.auth.onAuthStateChange.listen((_) {
+          notifyListeners();
+        });
+      } catch (_) {}
+    }
   }
 }

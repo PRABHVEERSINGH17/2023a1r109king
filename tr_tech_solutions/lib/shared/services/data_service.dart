@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
 import 'package:tr_tech_solutions/shared/models/dashboard_stats.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
@@ -268,7 +269,9 @@ final demoRepositoryProvider = Provider<DemoRepository>((ref) {
 
 final appRepositoryProvider = Provider<AppRepository>((ref) {
   final isDemo = ref.watch(demoModeProvider);
-  if (isDemo || !SupabaseConfig.isConfigured) {
+  final isLocal = ref.watch(localAuthProvider);
+  // Demo + device-local accounts use the on-device CRM workspace.
+  if (isDemo || isLocal || !SupabaseConfig.isConfigured) {
     return ref.watch(demoRepositoryProvider);
   }
   return SupabaseRepository(Supabase.instance.client);

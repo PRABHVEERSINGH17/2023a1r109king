@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/auth/widgets/social_auth_buttons.dart';
@@ -41,27 +40,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           );
 
       if (mounted) {
-        if (!SupabaseConfig.isConfigured) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Online signup needs Supabase configuration.')),
-          );
-          return;
-        }
-
-        final user = ref.read(currentUserProvider);
-        if (user != null) {
-          context.go('/dashboard');
-          return;
-        }
-
+        // Local or cloud session — enter the app.
+        context.go('/dashboard');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'Account created! If email confirmation is on, check your inbox, then sign in.',
-            ),
+            content: Text('Account ready — you are signed in'),
           ),
         );
-        context.go('/login?mode=online');
       }
     } catch (e) {
       if (mounted) {
