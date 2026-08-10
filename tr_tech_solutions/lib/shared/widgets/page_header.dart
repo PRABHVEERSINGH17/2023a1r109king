@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 
 class PageHeader extends StatelessWidget {
   final String title;
@@ -11,15 +12,32 @@ class PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  fontFamily: AppTypography.display,
+                  letterSpacing: -0.8,
+                  color: AppColors.textPrimary,
+                ),
+              ),
               if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(subtitle!, style: const TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 6),
+                Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontFamily: AppTypography.body,
+                    height: 1.4,
+                  ),
+                ),
               ],
             ],
           ),
@@ -37,11 +55,15 @@ class DataListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: child,
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 }

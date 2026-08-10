@@ -31,7 +31,7 @@ class TrTechApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'TR Technology Solutions',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       routerConfig: router,
     );
   }

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_motion.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/features/clients/screens/clients_screen.dart';
 import 'package:tr_tech_solutions/shared/models/dashboard_stats.dart';
@@ -136,55 +138,77 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Dashboard',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Everything is clickable — tap any card, chart, or shortcut.',
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: 'Refresh dashboard',
-                    onPressed: () => _refresh(ref),
-                    icon: const Icon(Icons.refresh),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _ModuleGrid(onNavigate: (route) => _go(context, route)),
-              const SizedBox(height: 24),
-              _buildKpiRow(context, ref, stats, isWide),
-              const SizedBox(height: 24),
-              if (isWide)
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              FadeInUp(
+                child: Row(
                   children: [
-                    Expanded(
-                      flex: 2,
-                      child: _RevenueChart(onOpen: () => _go(context, '/reports')),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dashboard',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: AppTypography.display,
+                              letterSpacing: -0.8,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            'Tap any module, KPI, or chart to jump in.',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontFamily: AppTypography.body,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _ServicesChart(onOpen: () => _go(context, '/services')),
+                    IconButton.filledTonal(
+                      tooltip: 'Refresh dashboard',
+                      onPressed: () => _refresh(ref),
+                      icon: const Icon(Icons.refresh_rounded),
                     ),
                   ],
-                )
-              else ...[
-                _RevenueChart(onOpen: () => _go(context, '/reports')),
-                const SizedBox(height: 16),
-                _ServicesChart(onOpen: () => _go(context, '/services')),
-              ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              FadeInUp(
+                delay: const Duration(milliseconds: 80),
+                child: _ModuleGrid(onNavigate: (route) => _go(context, route)),
+              ),
+              const SizedBox(height: 24),
+              FadeInUp(
+                delay: const Duration(milliseconds: 140),
+                child: _buildKpiRow(context, ref, stats, isWide),
+              ),
+              const SizedBox(height: 24),
+              FadeInUp(
+                delay: const Duration(milliseconds: 200),
+                child: isWide
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: _RevenueChart(onOpen: () => _go(context, '/reports')),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _ServicesChart(onOpen: () => _go(context, '/services')),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          _RevenueChart(onOpen: () => _go(context, '/reports')),
+                          const SizedBox(height: 16),
+                          _ServicesChart(onOpen: () => _go(context, '/services')),
+                        ],
+                      ),
+              ),
               const SizedBox(height: 24),
               if (isWide)
                 Row(
@@ -306,12 +330,12 @@ class DashboardScreen extends ConsumerWidget {
 
     if (isWide) {
       return SizedBox(
-        height: 168,
+        height: 176,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: cards.length,
           separatorBuilder: (_, __) => const SizedBox(width: 12),
-          itemBuilder: (_, i) => SizedBox(width: 220, child: cards[i]),
+          itemBuilder: (_, i) => SizedBox(width: 228, child: cards[i]),
         ),
       );
     }
@@ -358,7 +382,12 @@ class _ModuleGrid extends StatelessWidget {
       children: [
         const Text(
           'Go to module',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            fontFamily: AppTypography.display,
+            color: AppColors.textPrimary,
+          ),
         ),
         const SizedBox(height: 12),
         GridView.builder(
@@ -369,20 +398,20 @@ class _ModuleGrid extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 2.4,
+            childAspectRatio: 2.45,
           ),
           itemBuilder: (context, index) {
             final m = _modules[index];
             return Material(
               color: AppColors.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               child: InkWell(
                 onTap: () => onNavigate(m.$3),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 mouseCursor: SystemMouseCursors.click,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: AppColors.border),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -391,8 +420,8 @@ class _ModuleGrid extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: m.$4.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
+                          color: m.$4.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: Icon(m.$1, color: m.$4, size: 18),
                       ),
@@ -400,11 +429,15 @@ class _ModuleGrid extends StatelessWidget {
                       Expanded(
                         child: Text(
                           m.$2,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            fontFamily: AppTypography.body,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                      const Icon(Icons.arrow_outward_rounded, size: 16, color: AppColors.textMuted),
                     ],
                   ),
                 ),
@@ -614,13 +647,13 @@ class _ServicesChart extends ConsumerWidget {
                     ),
                   );
                 }
-                final colors = [
-                  AppColors.primary,
-                  AppColors.info,
-                  AppColors.success,
-                  AppColors.warning,
-                  AppColors.danger,
-                ];
+                    final colors = [
+                      AppColors.chart1,
+                      AppColors.chart2,
+                      AppColors.chart3,
+                      AppColors.chart4,
+                      AppColors.chart5,
+                    ];
                 final entries = dist.entries.toList();
                 return Column(
                   children: [

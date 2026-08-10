@@ -53,10 +53,10 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const Divider(height: 1),
                 ListTile(
-                  leading: const Icon(Icons.dark_mode_outlined),
-                  title: const Text('Dark Mode'),
-                  subtitle: const Text('Always enabled'),
-                  trailing: Switch(value: true, onChanged: null),
+                  leading: const Icon(Icons.wb_sunny_outlined),
+                  title: const Text('Appearance'),
+                  subtitle: const Text('Modern light workspace'),
+                  trailing: Switch(value: false, onChanged: null),
                 ),
                 const Divider(height: 1),
                 ListTile(

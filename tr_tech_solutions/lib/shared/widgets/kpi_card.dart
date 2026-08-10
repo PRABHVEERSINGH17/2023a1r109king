@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 
 class KpiCard extends StatelessWidget {
   final String title;
@@ -23,73 +24,92 @@ class KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          mouseCursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        mouseCursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.border),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.surface,
+                color.withOpacity(0.06),
+              ],
+            ),
+          ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(icon, color: color, size: 22),
-                    ),
-                    const Spacer(),
-                    if (trend != null)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          trend!,
-                          style: const TextStyle(
-                            color: AppColors.success,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: color.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Icon(icon, color: color, size: 20),
+                        ),
+                        const Spacer(),
+                        if (trend != null)
+                          Text(
+                            trend!,
+                            style: TextStyle(
+                              color: color,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: AppTypography.body,
+                            ),
+                          ),
+                        if (onTap != null) ...[
+                          const SizedBox(width: 4),
+                          Icon(Icons.arrow_outward_rounded, size: 16, color: color.withOpacity(0.8)),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        fontFamily: AppTypography.body,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: AppTypography.display,
+                        color: AppColors.textPrimary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle!,
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                          fontFamily: AppTypography.body,
                         ),
                       ),
-                    if (onTap != null) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
                     ],
                   ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
-                  ),
-                ],
-              ],
             ),
           ),
         ),

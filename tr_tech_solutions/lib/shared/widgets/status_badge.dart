@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 
 class StatusBadge extends StatelessWidget {
   final String status;
@@ -13,20 +14,21 @@ class StatusBadge extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 12,
-        vertical: compact ? 2 : 4,
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 3 : 5,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.28)),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: color,
           fontSize: compact ? 11 : 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          fontFamily: AppTypography.body,
         ),
       ),
     );

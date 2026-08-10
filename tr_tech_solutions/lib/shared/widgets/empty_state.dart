@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -29,21 +30,42 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: AppColors.textMuted),
-            const SizedBox(height: 16),
-            Text(title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(icon, size: 34, color: AppColors.primary),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                fontFamily: AppTypography.display,
+                color: AppColors.textPrimary,
+              ),
+            ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
-              Text(subtitle!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontFamily: AppTypography.body,
+                  height: 1.4,
+                ),
+              ),
             ],
             if (actionLabel != null && onAction != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               ElevatedButton.icon(
                 onPressed: onAction,
-                icon: const Icon(Icons.add),
+                icon: const Icon(Icons.add_rounded),
                 label: Text(actionLabel!),
               ),
             ],
@@ -95,9 +117,13 @@ class AppErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.danger),
+            const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.danger),
             const SizedBox(height: 16),
-            Text(message, textAlign: TextAlign.center),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontFamily: AppTypography.body, color: AppColors.textPrimary),
+            ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
