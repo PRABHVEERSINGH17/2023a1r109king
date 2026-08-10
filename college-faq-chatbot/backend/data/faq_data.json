@@ -1,0 +1,229 @@
+{
+  "college_name": "ABC Institute of Technology",
+  "categories": [
+  {
+    "id": "admissions",
+    "name": "Admissions",
+    "icon": "🎓",
+    "faqs": [
+      {
+        "id": "adm-1",
+        "question": "What are the admission eligibility criteria?",
+        "keywords": ["eligibility", "criteria", "qualification", "12th", "diploma", "admission requirement"],
+        "answer": "For B.Tech: 10+2 with Physics, Chemistry, and Mathematics with at least 50% aggregate (45% for reserved categories). For M.Tech: B.Tech/B.E. in relevant discipline with 55% marks. Diploma holders may apply for lateral entry to 2nd year B.Tech."
+      },
+      {
+        "id": "adm-2",
+        "question": "How do I apply for admission?",
+        "keywords": ["apply", "application", "form", "register", "how to join"],
+        "answer": "Apply online at admissions.abcit.edu.in. Steps: (1) Register with email and phone, (2) Fill the application form, (3) Upload documents (marksheets, ID proof, photo), (4) Pay application fee of ₹500, (5) Submit and note your application number. Counselling dates are published on the website."
+      },
+      {
+        "id": "adm-3",
+        "question": "What documents are required for admission?",
+        "keywords": ["documents", "certificates", "papers needed", "proof"],
+        "answer": "Required documents: 10th & 12th mark sheets and certificates, transfer/migration certificate, character certificate, domicile certificate (if applicable), caste certificate (if applicable), Aadhaar card, passport-size photographs (6), and entrance exam scorecard (JEE/state CET)."
+      },
+      {
+        "id": "adm-4",
+        "question": "What is the last date for admission?",
+        "keywords": ["deadline", "last date", "closing date", "admission date"],
+        "answer": "Admission for the 2025-26 session closes on July 31, 2025. Spot admissions may be available until August 15 subject to seat availability. Check admissions.abcit.edu.in for updated schedules."
+      }
+    ]
+  },
+  {
+    "id": "fees",
+    "name": "Fees & Scholarships",
+    "icon": "💰",
+    "faqs": [
+      {
+        "id": "fee-1",
+        "question": "What is the annual tuition fee?",
+        "keywords": ["tuition", "fee structure", "cost", "how much", "annual fee"],
+        "answer": "B.Tech annual tuition fee: ₹85,000/year. M.Tech: ₹65,000/year. Hostel charges are separate (₹45,000/year including mess). Lab and library fees (₹5,000/year) are included in the tuition fee. Fee structure is subject to university approval."
+      },
+      {
+        "id": "fee-2",
+        "question": "How can I pay college fees?",
+        "keywords": ["pay fee", "payment", "online payment", "fee portal"],
+        "answer": "Pay fees through the student portal (erp.abcit.edu.in) via UPI, net banking, debit/credit card, or demand draft. Fee installments: 50% at admission, 25% by December, 25% by March. Late fee of ₹500/month applies after due dates."
+      },
+      {
+        "id": "fee-3",
+        "question": "Are scholarships available?",
+        "keywords": ["scholarship", "financial aid", "merit", "sc st obc"],
+        "answer": "Yes. Merit scholarships: top 10% students get 25-100% fee waiver. Government scholarships: SC/ST/OBC/EWS students can apply for state and central schemes. Sports quota scholarships are also available. Visit the scholarship cell (Room 101, Admin Block) or scholarship@abcit.edu.in."
+      },
+      {
+        "id": "fee-4",
+        "question": "Is there a fee refund policy?",
+        "keywords": ["refund", "withdraw", "cancel admission", "money back"],
+        "answer": "Fee refund is as per AICTE norms: 100% refund if withdrawal before counselling round 2, 80% before course start, 50% within 15 days of start, no refund after 15 days. Processing takes 30 working days to the original payment mode."
+      }
+    ]
+  },
+  {
+    "id": "exams",
+    "name": "Exams & Results",
+    "icon": "📝",
+    "faqs": [
+      {
+        "id": "exam-1",
+        "question": "When are semester exams conducted?",
+        "keywords": ["exam date", "semester exam", "when exam", "exam schedule"],
+        "answer": "Odd semester exams: November–December. Even semester exams: May–June. The detailed date sheet is published 3 weeks before exams on erp.abcit.edu.in and notice boards. Internal assessments (IA) happen in September and February."
+      },
+      {
+        "id": "exam-2",
+        "question": "What is the minimum attendance required for exams?",
+        "keywords": ["attendance", "75 percent", "shortage", "condonation"],
+        "answer": "Minimum 75% attendance in each subject is mandatory to appear in university exams. 65-74% may qualify for condonation with valid medical/official reasons and a fee of ₹2,000 per subject. Below 65% results in detention for that semester."
+      },
+      {
+        "id": "exam-3",
+        "question": "How do I check my exam results?",
+        "keywords": ["result", "marks", "grade", "scorecard"],
+        "answer": "Results are published on the university portal and mirrored on erp.abcit.edu.in within 45 days of the last exam. Log in with your roll number and password. Revaluation applications open for 7 days after result declaration (fee: ₹500 per paper)."
+      },
+      {
+        "id": "exam-4",
+        "question": "What if I fail in a subject?",
+        "keywords": ["fail", "backlog", "supplementary", "reappear", "kt"],
+        "answer": "Failed subjects must be cleared in supplementary exams (held in July and January) or with the next regular batch. Maximum 8 backlogs allowed to continue to next year. Academic counselling is available through your department HOD."
+      }
+    ]
+  },
+  {
+    "id": "academics",
+    "name": "Academics & Timetable",
+    "icon": "📚",
+    "faqs": [
+      {
+        "id": "acad-1",
+        "question": "How do I get my class timetable?",
+        "keywords": ["timetable", "schedule", "class timing", "routine"],
+        "answer": "Timetables are available on erp.abcit.edu.in under Academics → Timetable, and on department notice boards every Monday. Labs and tutorials may have different slots. Contact your class coordinator for changes."
+      },
+      {
+        "id": "acad-2",
+        "question": "How do I register for elective subjects?",
+        "keywords": ["elective", "optional subject", "course registration"],
+        "answer": "Elective registration opens in the first week of each semester on the ERP portal. Choose subjects before the deadline (usually 7 days). Seats are allotted on first-come-first-served basis. Contact the academic office for conflicts."
+      },
+      {
+        "id": "acad-3",
+        "question": "Where can I get study materials and notes?",
+        "keywords": ["notes", "study material", "syllabus", "books", "e-learning"],
+        "answer": "Syllabus and study materials are on the college LMS (lms.abcit.edu.in). Central library has textbooks and reference books. Faculty may share notes on Google Classroom. Previous year question papers are in the library digital archive."
+      },
+      {
+        "id": "acad-4",
+        "question": "Who is my academic mentor?",
+        "keywords": ["mentor", "advisor", "faculty advisor", "guide"],
+        "answer": "Each student is assigned a faculty mentor at the start of the year. Check erp.abcit.edu.in → Profile → Mentor Details, or ask your class representative. Mentors help with academics, attendance issues, and career guidance."
+      }
+    ]
+  },
+  {
+    "id": "hostel",
+    "name": "Hostel & Campus",
+    "icon": "🏠",
+    "faqs": [
+      {
+        "id": "hos-1",
+        "question": "How do I apply for hostel accommodation?",
+        "keywords": ["hostel", "accommodation", "room", "stay", "boarding"],
+        "answer": "Apply online at hostel.abcit.edu.in after admission confirmation. Priority: outstation students, then distance-based. Hostel fee: ₹45,000/year (includes mess). Rooms are twin-sharing with Wi-Fi, laundry, and 24/7 security. Warden contact: warden@abcit.edu.in."
+      },
+      {
+        "id": "hos-2",
+        "question": "What are hostel rules and timings?",
+        "keywords": ["hostel rules", "curfew", "timing", "visitors"],
+        "answer": "Hostel gate closes at 9:30 PM (10:30 PM on weekends). Visitors allowed in common area till 6 PM with ID. No outside food delivery after 8 PM. Ragging is strictly prohibited—report to anti-ragging helpline 1800-180-5522."
+      },
+      {
+        "id": "hos-3",
+        "question": "Is there a canteen or mess on campus?",
+        "keywords": ["canteen", "mess", "food", "cafeteria", "lunch"],
+        "answer": "Yes. Main canteen (Block A) open 8 AM–8 PM. Hostel mess serves breakfast, lunch, and dinner. Monthly mess card: ₹3,500. Veg and non-veg options available. Food committee accepts feedback every month."
+      }
+    ]
+  },
+  {
+    "id": "library",
+    "name": "Library",
+    "icon": "📖",
+    "faqs": [
+      {
+        "id": "lib-1",
+        "question": "What are library timings?",
+        "keywords": ["library hours", "library open", "library timing"],
+        "answer": "Central Library: Monday–Saturday, 8:00 AM – 8:00 PM. Sunday: 10:00 AM – 4:00 PM (reading room only). Extended hours during exam season (till 10 PM). Closed on public holidays."
+      },
+      {
+        "id": "lib-2",
+        "question": "How do I issue books from the library?",
+        "keywords": ["issue book", "borrow", "library card", "books"],
+        "answer": "Use your student ID at the library counter or self-issue kiosk. UG students: 3 books for 14 days. PG students: 5 books for 21 days. Fine: ₹5/day per overdue book. Online catalogue: library.abcit.edu.in."
+      }
+    ]
+  },
+  {
+    "id": "placements",
+    "name": "Placements & Internships",
+    "icon": "💼",
+    "faqs": [
+      {
+        "id": "place-1",
+        "question": "What is the placement record of the college?",
+        "keywords": ["placement", "job", "company", "package", "recruitment"],
+        "answer": "2024 placement stats: 85% placement rate, highest package ₹18 LPA, average package ₹4.5 LPA. Recruiters include TCS, Infosys, Wipro, Amazon, and core companies. Training & Placement Cell (TPC) is in Block C, Room 205."
+      },
+      {
+        "id": "place-2",
+        "question": "How do I register for campus placements?",
+        "keywords": ["register placement", "campus drive", "TPC", "placement cell"],
+        "answer": "Register on the placement portal (placement.abcit.edu.in) by August of final year. Upload resume, academic records, and complete aptitude training modules. Minimum 60% aggregate and no active backlogs required for most companies."
+      },
+      {
+        "id": "place-3",
+        "question": "Are internships provided by the college?",
+        "keywords": ["internship", "summer training", "industrial visit"],
+        "answer": "Yes. TPC facilitates summer internships from 2nd year onward. Mandatory 4-week industrial training in 3rd year. College has MOUs with 50+ companies. Also check internship fairs held in March every year."
+      }
+    ]
+  },
+  {
+    "id": "general",
+    "name": "General & Contact",
+    "icon": "ℹ️",
+    "faqs": [
+      {
+        "id": "gen-1",
+        "question": "What is the college address and contact number?",
+        "keywords": ["address", "contact", "phone", "email", "location", "where"],
+        "answer": "ABC Institute of Technology, NH-44, Sector 12, Pune, Maharashtra – 411001. Phone: +91-20-12345678. Email: info@abcit.edu.in. Website: www.abcit.edu.in. Nearest railway station: Pune Junction (8 km)."
+      },
+      {
+        "id": "gen-2",
+        "question": "How do I get my student ID card?",
+        "keywords": ["id card", "identity card", "student card"],
+        "answer": "ID cards are issued within 15 days of admission from the Admin Office (Ground Floor, Block A). Bring admission receipt and one passport photo. Lost card replacement: ₹200. ID is required for library, exams, and hostel access."
+      },
+      {
+        "id": "gen-3",
+        "question": "How do I apply for leave?",
+        "keywords": ["leave", "absent", "medical leave", "application"],
+        "answer": "Apply leave on erp.abcit.edu.in → Academics → Leave Application. Attach medical certificate for sick leave beyond 3 days. Mentor and HOD approval required. Inform class coordinator for short absences."
+      },
+      {
+        "id": "gen-4",
+        "question": "Is there a bus facility for day scholars?",
+        "keywords": ["bus", "transport", "commute", "day scholar"],
+        "answer": "College buses operate on 6 routes across Pune city. Annual transport fee: ₹18,000. Routes and timings are on transport.abcit.edu.in. GPS tracking available via the college mobile app."
+      }
+    ]
+  }
+  ]
+}

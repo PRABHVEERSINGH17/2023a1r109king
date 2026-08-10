@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College FAQ Chatbot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">🎓</div>
+        <div>
+          <h1 id="college-name">College FAQ</h1>
+          <p>AI Assistant</p>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h2>Categories</h2>
+        <nav id="category-list" class="category-list"></nav>
+      </div>
+
+      <div class="sidebar-section">
+        <h2>Quick Questions</h2>
+        <div id="quick-questions" class="quick-questions"></div>
+      </div>
+
+      <div class="sidebar-footer">
+        <p>Powered by TF-IDF + NLP</p>
+        <p class="muted">College Minor Project</p>
+      </div>
+    </aside>
+
+    <main class="chat-panel">
+      <header class="chat-header">
+        <div>
+          <h2>FAQ Chatbot</h2>
+          <p id="status-text">Ask anything about admissions, exams, fees & more</p>
+        </div>
+        <button id="clear-chat" class="btn-secondary" type="button">Clear Chat</button>
+      </header>
+
+      <div id="messages" class="messages" aria-live="polite">
+        <div class="message bot">
+          <div class="avatar">🤖</div>
+          <div class="bubble">
+            <p>Hello! I'm your college FAQ assistant. I can help with admissions, fees, exams, hostel, placements, and more.</p>
+            <p class="hint">Try asking: <em>"What is the tuition fee?"</em> or pick a question from the sidebar.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="suggestion-chips" class="suggestion-chips"></div>
+
+      <form id="chat-form" class="chat-input-area">
+        <input
+          id="message-input"
+          type="text"
+          placeholder="Type your question here..."
+          autocomplete="off"
+          maxlength="500"
+          required
+        />
+        <button id="send-btn" type="submit" aria-label="Send message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </form>
+    </main>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
