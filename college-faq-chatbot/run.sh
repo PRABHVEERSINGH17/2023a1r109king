@@ -6,20 +6,15 @@ cd "$(dirname "$0")/backend"
 if ! python3 -m venv --help >/dev/null 2>&1; then
   echo ""
   echo "  ERROR: python3-venv is not installed."
-  echo "  Run this first:"
-  echo "    sudo apt update && sudo apt install -y python3-venv python3-pip"
+  echo "  Run: sudo apt update && sudo apt install -y python3-venv python3-pip"
   echo ""
   exit 1
 fi
 
-if [ ! -d ".venv" ]; then
-  echo "Creating virtual environment..."
-  python3 -m venv .venv
-fi
+chmod +x install_deps.sh
+./install_deps.sh
 
 source .venv/bin/activate
-pip install -q --upgrade pip
-pip install -q -r requirements.txt
 
 echo ""
 echo "  College FAQ Chatbot is starting..."
