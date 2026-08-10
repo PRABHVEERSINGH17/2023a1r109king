@@ -3,9 +3,12 @@ android/key.properties
 android/keystore/
 *.jks
 *.keystore
+
+# Keep the distributable Android app in git so it can be installed without a web link
 *.aab
 *.apk
-release/*.apk
+!release/TR-Tech-Solutions.apk
+!release/app-release.aab
 !release/README.md
 
 # Tooling / build artifacts
