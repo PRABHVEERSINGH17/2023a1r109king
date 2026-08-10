@@ -10,7 +10,7 @@ A **complete, ready-to-run** college FAQ chatbot with:
 
 ---
 
-## Run on Ubuntu / Linux (recommended)
+## Run on Ubuntu / Linux (Web app)
 
 Copy and paste **all commands** in Terminal:
 
@@ -29,6 +29,32 @@ chmod +x run.sh
 Open **http://localhost:8000** in Chrome/Firefox.
 
 > **Note:** Do NOT use `pip3 install` globally on Ubuntu — the app uses a virtual environment automatically.
+
+---
+
+## Android APK (mobile app — works offline)
+
+### Build on your laptop
+
+```bash
+sudo snap install flutter --classic
+flutter doctor --android-licenses
+
+cd ~/Desktop/minor/2023a1r109king-main/college-faq-chatbot/mobile
+flutter pub get
+flutter build apk --release
+```
+
+APK path: `mobile/build/app/outputs/flutter-apk/app-release.apk`
+
+Full guide: **`mobile/BUILD_APK.md`**
+
+### Download from GitHub Actions
+
+1. https://github.com/PRABHVEERSINGH17/2023a1r109king/actions
+2. Open **Build Android APK** → latest run
+3. Download **college-faq-chatbot-apk** artifact
+4. Install on Android phone
 
 ---
 

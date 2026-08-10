@@ -1,0 +1,4 @@
+# APK files are too large for GitHub (47MB).
+# Build locally: see BUILD_APK.md
+# Or download from GitHub Actions artifacts after workflow runs.
+*.apk
