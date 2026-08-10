@@ -54,6 +54,7 @@ class AuthService {
       return;
     }
 
+    _ref.read(demoModeProvider.notifier).state = false;
     await Supabase.instance.client.auth.signInWithPassword(
       email: email,
       password: password,
@@ -81,10 +82,11 @@ class AuthService {
   Future<void> signOut() async {
     if (isDemoMode) {
       _ref.read(demoModeProvider.notifier).state = false;
-      return;
     }
     if (SupabaseConfig.isConfigured) {
-      await Supabase.instance.client.auth.signOut();
+      try {
+        await Supabase.instance.client.auth.signOut();
+      } catch (_) {}
     }
   }
 }

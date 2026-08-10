@@ -67,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
                         ? 'Demo mode (local sample data)'
                         : SupabaseConfig.isConfigured
                             ? 'Connected to Supabase'
-                            : 'Not configured - update assets/.env',
+                            : 'Not configured - update assets/supabase.env',
                     style: TextStyle(
                       color: isDemo || SupabaseConfig.isConfigured
                           ? AppColors.success
@@ -75,6 +75,26 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                if (!isDemo) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.science_outlined),
+                    title: const Text('Load Demo Clients'),
+                    subtitle: const Text('Switch to sample data with 5 clients'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      await ref.read(authServiceProvider).enterDemoMode();
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Demo Mode enabled — sample clients loaded'),
+                          ),
+                        );
+                        context.go('/clients');
+                      }
+                    },
+                  ),
+                ],
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.logout, color: AppColors.danger),

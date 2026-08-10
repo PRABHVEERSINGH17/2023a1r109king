@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/screens/clients_screen.dart';
 import 'package:tr_tech_solutions/shared/models/dashboard_stats.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
 import 'package:tr_tech_solutions/shared/models/project.dart';
@@ -98,6 +99,12 @@ class DashboardScreen extends ConsumerWidget {
     ref.invalidate(monthlyRevenueProvider);
   }
 
+  void _goClients(BuildContext context, WidgetRef ref) {
+    // Ensure clients list is fresh when opened from the dashboard KPI.
+    ref.invalidate(clientsProvider);
+    _go(context, '/clients');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(dashboardStatsProvider);
@@ -143,7 +150,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _QuickActions(onNavigate: (route) => _go(context, route)),
               const SizedBox(height: 24),
-              _buildKpiRow(context, stats, isWide),
+              _buildKpiRow(context, ref, stats, isWide),
               const SizedBox(height: 24),
               if (isWide)
                 Row(
@@ -205,7 +212,12 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildKpiRow(BuildContext context, DashboardStats stats, bool isWide) {
+  Widget _buildKpiRow(
+    BuildContext context,
+    WidgetRef ref,
+    DashboardStats stats,
+    bool isWide,
+  ) {
     final cards = [
       KpiCard(
         title: 'Total Revenue',
@@ -221,7 +233,7 @@ class DashboardScreen extends ConsumerWidget {
         icon: Icons.people,
         color: AppColors.info,
         trend: 'Manage',
-        onTap: () => _go(context, '/clients'),
+        onTap: () => _goClients(context, ref),
       ),
       KpiCard(
         title: 'Active Services',

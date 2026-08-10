@@ -67,7 +67,10 @@ class SupabaseRepository implements AppRepository {
   Future<List<ClientModel>> getClients() async {
     final response =
         await _client.from('clients').select().order('created_at', ascending: false);
-    return (response as List).map((e) => ClientModel.fromJson(e)).toList();
+    return (response as List)
+        .map((e) => ClientModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .where((c) => c.id.isNotEmpty && c.name.isNotEmpty)
+        .toList();
   }
 
   @override

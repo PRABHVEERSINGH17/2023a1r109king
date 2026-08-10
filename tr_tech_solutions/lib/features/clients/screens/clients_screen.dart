@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
@@ -15,9 +18,20 @@ final clientsProvider = FutureProvider<List<ClientModel>>((ref) async {
 class ClientsScreen extends ConsumerWidget {
   const ClientsScreen({super.key});
 
+  Future<void> _loadDemoData(BuildContext context, WidgetRef ref) async {
+    await ref.read(authServiceProvider).enterDemoMode();
+    ref.invalidate(clientsProvider);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Loaded sample clients in Demo Mode')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final clientsAsync = ref.watch(clientsProvider);
+    final isDemo = ref.watch(demoModeProvider);
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -26,65 +40,110 @@ class ClientsScreen extends ConsumerWidget {
         children: [
           PageHeader(
             title: 'Clients',
-            subtitle: 'Manage your client relationships',
-            action: ElevatedButton.icon(
-              onPressed: () => _showClientDialog(context, ref),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Add Client'),
+            subtitle: isDemo
+                ? 'Sample demo clients — ready to explore'
+                : 'Manage your client relationships',
+            action: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: 'Refresh',
+                  onPressed: () => ref.invalidate(clientsProvider),
+                  icon: const Icon(Icons.refresh),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: () => _showClientDialog(context, ref),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add Client'),
+                ),
+              ],
             ),
           ),
+          if (isDemo) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.primary.withOpacity(0.35)),
+              ),
+              child: const Text(
+                'Demo Mode: showing 5 sample clients. Add, edit, and explore freely.',
+                style: TextStyle(fontSize: 13),
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Expanded(
             child: clientsAsync.when(
               loading: () => const LoadingWidget(),
               error: (e, _) => AppErrorWidget(
-                message: e.toString(),
+                message: 'Could not load clients.\n$e',
                 onRetry: () => ref.invalidate(clientsProvider),
+                secondaryLabel: isDemo ? null : 'Load Demo Clients',
+                onSecondary: isDemo ? null : () => _loadDemoData(context, ref),
               ),
               data: (clients) {
                 if (clients.isEmpty) {
                   return EmptyState(
                     icon: Icons.people_outline,
                     title: 'No clients yet',
-                    subtitle: 'Add your first client to get started',
+                    subtitle: isDemo
+                        ? 'Add your first client to get started'
+                        : 'Your live database has no clients yet. Load sample data or add a client.',
                     actionLabel: 'Add Client',
                     onAction: () => _showClientDialog(context, ref),
+                    secondaryLabel: isDemo ? null : 'Load Demo Clients',
+                    onSecondary: isDemo ? null : () => _loadDemoData(context, ref),
                   );
                 }
                 return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Name')),
-                        DataColumn(label: Text('Email')),
-                        DataColumn(label: Text('Phone')),
-                        DataColumn(label: Text('Company')),
-                        DataColumn(label: Text('Status')),
-                        DataColumn(label: Text('Actions')),
-                      ],
-                      rows: clients.map((client) {
-                        return DataRow(cells: [
-                          DataCell(Text(client.name)),
-                          DataCell(Text(client.email ?? '-')),
-                          DataCell(Text(client.phone ?? '-')),
-                          DataCell(Text(client.company ?? '-')),
-                          DataCell(StatusBadge(status: client.status, compact: true)),
-                          DataCell(Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, size: 18),
-                                onPressed: () => _showClientDialog(context, ref, client: client),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                                onPressed: () => _deleteClient(context, ref, client.id),
-                              ),
-                            ],
-                          )),
-                        ]);
-                      }).toList(),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                            child: DataTable(
+                              columns: const [
+                                DataColumn(label: Text('Name')),
+                                DataColumn(label: Text('Email')),
+                                DataColumn(label: Text('Phone')),
+                                DataColumn(label: Text('Company')),
+                                DataColumn(label: Text('Status')),
+                                DataColumn(label: Text('Actions')),
+                              ],
+                              rows: clients.map((client) {
+                                return DataRow(cells: [
+                                  DataCell(Text(client.name)),
+                                  DataCell(Text(client.email ?? '-')),
+                                  DataCell(Text(client.phone ?? '-')),
+                                  DataCell(Text(client.company ?? '-')),
+                                  DataCell(StatusBadge(status: client.status, compact: true)),
+                                  DataCell(Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit, size: 18),
+                                        onPressed: () =>
+                                            _showClientDialog(context, ref, client: client),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                                        onPressed: () => _deleteClient(context, ref, client.id),
+                                      ),
+                                    ],
+                                  )),
+                                ]);
+                              }).toList(),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 );
               },
@@ -148,14 +207,21 @@ class ClientsScreen extends ConsumerWidget {
                   'status': status,
                 };
 
-                if (client == null) {
-                  await service.createClient(data);
-                } else {
-                  await service.updateClient(client.id, data);
+                try {
+                  if (client == null) {
+                    await service.createClient(data);
+                  } else {
+                    await service.updateClient(client.id, data);
+                  }
+                  ref.invalidate(clientsProvider);
+                  if (ctx.mounted) Navigator.pop(ctx);
+                } catch (e) {
+                  if (ctx.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not save client: $e')),
+                    );
+                  }
                 }
-
-                ref.invalidate(clientsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
               },
               child: Text(client == null ? 'Add' : 'Save'),
             ),
@@ -183,8 +249,16 @@ class ClientsScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      await ref.read(dataServiceProvider)?.deleteClient(id);
-      ref.invalidate(clientsProvider);
+      try {
+        await ref.read(dataServiceProvider)?.deleteClient(id);
+        ref.invalidate(clientsProvider);
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not delete client: $e')),
+          );
+        }
+      }
     }
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/providers/data_bootstrap_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/shared/widgets/sidebar.dart';
@@ -26,9 +28,14 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Auto-load demo seed data when live Supabase clients are empty/unavailable.
+    ref.watch(dataBootstrapProvider);
+
     final currentRoute = GoRouterState.of(context).uri.path;
     final isWide = MediaQuery.of(context).size.width >= 900;
+    final isDemo = ref.watch(demoModeProvider);
     final email = ref.watch(authServiceProvider).currentUserEmail ?? 'User';
+    final displayEmail = isDemo ? '$email (Demo)' : email;
 
     if (isWide) {
       return Scaffold(
@@ -42,7 +49,7 @@ class AppShell extends ConsumerWidget {
             Expanded(
               child: Column(
                 children: [
-                  _HeaderBar(email: email, onSignOut: () => _signOut(context, ref)),
+                  _HeaderBar(email: displayEmail, onSignOut: () => _signOut(context, ref)),
                   Expanded(child: child),
                 ],
               ),
@@ -67,7 +74,7 @@ class AppShell extends ConsumerWidget {
               child: Icon(Icons.person, size: 18, color: Colors.white),
             ),
             itemBuilder: (context) => <PopupMenuEntry<void>>[
-              PopupMenuItem<void>(enabled: false, child: Text(email)),
+              PopupMenuItem<void>(enabled: false, child: Text(displayEmail)),
               const PopupMenuDivider(),
               PopupMenuItem<void>(
                 onTap: () => _signOut(context, ref),

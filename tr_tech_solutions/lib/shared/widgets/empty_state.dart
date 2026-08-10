@@ -7,6 +7,8 @@ class EmptyState extends StatelessWidget {
   final String? subtitle;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
   const EmptyState({
     super.key,
@@ -15,6 +17,8 @@ class EmptyState extends StatelessWidget {
     this.subtitle,
     this.actionLabel,
     this.onAction,
+    this.secondaryLabel,
+    this.onSecondary,
   });
 
   @override
@@ -43,6 +47,14 @@ class EmptyState extends StatelessWidget {
                 label: Text(actionLabel!),
               ),
             ],
+            if (secondaryLabel != null && onSecondary != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: onSecondary,
+                icon: const Icon(Icons.science_outlined),
+                label: Text(secondaryLabel!),
+              ),
+            ],
           ],
         ),
       ),
@@ -64,8 +76,16 @@ class LoadingWidget extends StatelessWidget {
 class AppErrorWidget extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
 
-  const AppErrorWidget({super.key, required this.message, this.onRetry});
+  const AppErrorWidget({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.secondaryLabel,
+    this.onSecondary,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -81,6 +101,14 @@ class AppErrorWidget extends StatelessWidget {
             if (onRetry != null) ...[
               const SizedBox(height: 16),
               OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
+            ],
+            if (secondaryLabel != null && onSecondary != null) ...[
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: onSecondary,
+                icon: const Icon(Icons.science_outlined),
+                label: Text(secondaryLabel!),
+              ),
             ],
           ],
         ),
