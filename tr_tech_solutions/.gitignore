@@ -5,3 +5,12 @@ android/keystore/
 *.keystore
 *.aab
 *.apk
+
+# Tooling / build artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+*.iml
+build/
+assets/.env
