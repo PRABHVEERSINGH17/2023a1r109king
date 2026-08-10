@@ -33,19 +33,21 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await ref.read(authServiceProvider).signUp(
+      await ref.read(authServiceProvider).signUp(
             _emailController.text.trim(),
             _passwordController.text,
             _nameController.text.trim(),
           );
 
       if (mounted) {
-        if (response.session != null) {
+        if (!SupabaseConfig.isConfigured) {
           context.go('/dashboard');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Account created! Check your email to confirm, then sign in.'),
+              content: Text(
+                'Account created! Confirm your email in inbox (if required), then sign in.',
+              ),
             ),
           );
           context.go('/login');
@@ -137,8 +139,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed:
-                              _isLoading || !SupabaseConfig.isConfigured ? null : _signUp,
+                          onPressed: _isLoading ? null : _signUp,
                           child: _isLoading
                               ? const SizedBox(
                                   height: 20,

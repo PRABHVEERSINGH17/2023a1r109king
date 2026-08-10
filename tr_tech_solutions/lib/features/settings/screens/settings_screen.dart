@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
+import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
@@ -12,6 +13,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final email = ref.watch(authServiceProvider).currentUserEmail ?? 'Not logged in';
+    final isDemo = ref.watch(demoModeProvider);
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -59,11 +61,17 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Supabase Connection'),
+                  title: const Text('Backend Mode'),
                   subtitle: Text(
-                    SupabaseConfig.isConfigured ? 'Connected' : 'Not configured - update assets/.env',
+                    isDemo
+                        ? 'Demo mode (local sample data)'
+                        : SupabaseConfig.isConfigured
+                            ? 'Connected to Supabase'
+                            : 'Not configured - update assets/.env',
                     style: TextStyle(
-                      color: SupabaseConfig.isConfigured ? AppColors.success : AppColors.warning,
+                      color: isDemo || SupabaseConfig.isConfigured
+                          ? AppColors.success
+                          : AppColors.warning,
                     ),
                   ),
                 ),

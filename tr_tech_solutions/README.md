@@ -22,45 +22,44 @@ A full-featured business management platform built with **Flutter** and **Supaba
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.24+)
 - A [Supabase](https://supabase.com) project
 
-## Setup
+## Quick start (works immediately — no Supabase needed)
 
-### 1. Supabase Database
+```bash
+cd tr_tech_solutions
+flutter pub get
+flutter run -d chrome
+```
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run the entire contents of [`supabase/schema.sql`](supabase/schema.sql)
-3. Go to **Settings → API** and copy your **Project URL** and **anon public key**
+On the login screen:
+- Click **Explore Demo Dashboard**, or
+- Sign in with the pre-filled demo credentials (`admin@trtechsolutions.com` / `demo1234`)
 
-### 2. Configure Credentials
+The app ships with full sample data (clients, invoices, leads, services, tickets, etc.) so every screen works out of the box.
 
-Edit `assets/.env` with your Supabase credentials:
+## Connect your Supabase backend
+
+Credentials go in `assets/.env` (gitignored):
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 3. Enable Email Auth in Supabase
+### Database setup
 
-1. Go to **Authentication → Providers → Email**
-2. Enable **Email** provider
-3. For development, you can disable **Confirm email** under Email settings
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run [`supabase/schema.sql`](supabase/schema.sql) in **SQL Editor**
+3. If tables already exist, run [`supabase/fix_missing.sql`](supabase/fix_missing.sql) for tickets + dashboard stats
+4. Enable Email auth: Authentication → Providers → Email
+5. For faster local testing, disable **Confirm email** under Auth settings
 
-### 4. Run the App
-
-```bash
-cd tr_tech_solutions
-flutter pub get
-flutter run -d chrome    # Web
-flutter run              # Mobile/Desktop
-```
-
-Or pass credentials via dart-define:
+Then restart:
 
 ```bash
-flutter run -d chrome \
-  --dart-define=SUPABASE_URL=https://xxx.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=your-key
+flutter run -d chrome
 ```
+
+With credentials configured, login uses real Supabase Auth and all CRUD hits your database.
 
 ## Project Structure
 

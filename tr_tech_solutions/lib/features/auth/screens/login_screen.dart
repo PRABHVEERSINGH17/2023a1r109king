@@ -14,8 +14,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailController = TextEditingController(text: 'admin@trtechsolutions.com');
+  final _passwordController = TextEditingController(text: 'demo1234');
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -42,6 +42,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           SnackBar(content: Text('Login failed: ${e.toString()}')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _enterDemo() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authServiceProvider).enterDemoMode();
+      if (mounted) context.go('/dashboard');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -119,20 +129,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              const Text('Welcome back! Please sign in to continue.',
-                  style: TextStyle(color: AppColors.textSecondary)),
+              Text(
+                SupabaseConfig.isConfigured
+                    ? 'Welcome back! Please sign in to continue.'
+                    : 'Demo mode ready — click below to explore the full app.',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
               if (!SupabaseConfig.isConfigured) ...[
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.1),
+                    color: AppColors.info.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                    border: Border.all(color: AppColors.info.withOpacity(0.3)),
                   ),
                   child: const Text(
-                    'Supabase not configured. Add your credentials to assets/.env',
-                    style: TextStyle(color: AppColors.warning, fontSize: 12),
+                    'Running with demo data. Add Supabase credentials in assets/.env to connect your backend.',
+                    style: TextStyle(color: AppColors.info, fontSize: 12),
                   ),
                 ),
               ],
@@ -170,15 +184,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _isLoading || !SupabaseConfig.isConfigured ? null : _signIn,
+                onPressed: _isLoading ? null : _signIn,
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('Sign In'),
+                    : Text(SupabaseConfig.isConfigured ? 'Sign In' : 'Sign In (Demo)'),
               ),
+              if (!SupabaseConfig.isConfigured) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _enterDemo,
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: const Text('Explore Demo Dashboard'),
+                ),
+              ],
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -1,4 +1,4 @@
-# Environment variables with secrets
+# Local secrets — do not commit real keys
 assets/.env
 
 *.class
