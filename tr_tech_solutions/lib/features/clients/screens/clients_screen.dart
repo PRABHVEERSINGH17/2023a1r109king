@@ -231,9 +231,19 @@ class ClientsScreen extends ConsumerWidget {
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () async {
-                if (nameController.text.isEmpty) return;
+                if (nameController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enter a client name')),
+                  );
+                  return;
+                }
                 final service = ref.read(dataServiceProvider);
-                if (service == null) return;
+                if (service == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('App data is not ready yet — try Demo Mode')),
+                  );
+                  return;
+                }
 
                 final data = {
                   'name': nameController.text.trim(),
@@ -271,8 +281,9 @@ class ClientsScreen extends ConsumerWidget {
                 try {
                   if (client == null) {
                     final created = await service.createClient(data);
-                    // Guarantee linked modules exist even if create-path partially failed.
                     await ensureClientRelatedRecords(service, created);
+                    rememberClient(ref, created);
+
                     ref.invalidate(clientsProvider);
                     ref.invalidate(leadsProvider);
                     ref.invalidate(projectsProvider);
@@ -280,23 +291,29 @@ class ClientsScreen extends ConsumerWidget {
                     ref.invalidate(paymentsProvider);
                     ref.invalidate(servicesProvider);
                     ref.invalidate(ticketsProvider);
+
+                    // Wait until the clients list includes the new record.
+                    await ref.read(clientsProvider.future);
+
                     if (ctx.mounted) {
                       Navigator.pop(ctx); // loading
                       Navigator.pop(ctx); // form
                     }
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Client created with linked lead, project, invoice, payment, service & ticket',
+                            '${created.name} added — invoices, payments, services & more are linked',
                           ),
                         ),
                       );
                       context.go('/clients/${created.id}');
                     }
                   } else {
-                    await service.updateClient(client.id, data);
+                    final updated = await service.updateClient(client.id, data);
+                    rememberClient(ref, updated);
                     ref.invalidate(clientsProvider);
+                    await ref.read(clientsProvider.future);
                     if (ctx.mounted) {
                       Navigator.pop(ctx); // loading
                       Navigator.pop(ctx); // form

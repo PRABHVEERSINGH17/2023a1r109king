@@ -105,10 +105,25 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
           }
         }
         if (client == null) {
-          return const EmptyState(
+          // Avoid false "not found" while list is refreshing after Add Client.
+          if (clientsAsync.isLoading || clientsAsync.isRefreshing) {
+            return const LoadingWidget();
+          }
+          final overrides = ref.watch(localClientsOverrideProvider);
+          for (final c in overrides) {
+            if (c.id == clientId) {
+              client = c;
+              break;
+            }
+          }
+        }
+        if (client == null) {
+          return EmptyState(
             icon: Icons.person_off_outlined,
             title: 'Client not found',
-            subtitle: 'This client may have been deleted',
+            subtitle: 'Pull to refresh or go back to Clients',
+            actionLabel: 'Back to Clients',
+            onAction: () => context.go('/clients'),
           );
         }
 
