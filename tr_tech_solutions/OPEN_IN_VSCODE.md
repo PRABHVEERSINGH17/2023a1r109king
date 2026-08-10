@@ -1,71 +1,37 @@
 # Open this project in Visual Studio Code
 
-## 1. Install required tools
+## Fix for "No file or variants found for asset: assets/.env"
 
-1. [Visual Studio Code](https://code.visualstudio.com/)
-2. [Flutter SDK](https://docs.flutter.dev/get-started/install)
-3. In VS Code, install these extensions when prompted:
-   - **Dart**
-   - **Flutter**
+This is fixed. The app now uses `assets/supabase.env` (committed with your Supabase keys).
 
-## 2. Get the code
+## Steps
 
-### Option A — Clone from GitHub
-
+1. Pull latest code:
 ```bash
 git clone https://github.com/PRABHVEERSINGH17/2023a1r109king.git
 cd 2023a1r109king
 git checkout cursor/tr-tech-demo-mode-2b7a
+git pull
 code tr_tech_solutions
 ```
 
-### Option B — Open folder already on your PC
+2. In VS Code install **Dart** + **Flutter** extensions
 
-In VS Code:
-
-**File → Open Folder…** → select `tr_tech_solutions`
-
-## 3. Add your Supabase keys
-
-Create file `assets/.env` inside `tr_tech_solutions`:
-
-```env
-SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
-SUPABASE_ANON_KEY=paste-your-anon-key-here
-```
-
-## 4. Install packages
-
-In VS Code terminal (`Ctrl + `` `):
-
+3. In terminal:
 ```bash
 flutter pub get
-```
-
-## 5. Run the app
-
-1. Press **F5**, or
-2. Click **Run → Start Debugging**, or
-3. Choose **TR Tech (Chrome)** from the Run and Debug panel
-
-Or in terminal:
-
-```bash
 flutter run -d chrome
 ```
 
-## 6. Login
+Or press **F5** → **TR Tech (Chrome)**
 
-- Click **Explore Demo Dashboard**, or
-- Sign up / sign in with your email (Supabase auth)
+4. On login click **Explore Demo Dashboard** or Sign Up with your email
 
-## Project location
+## If you still see CardTheme errors
 
+Your Flutter SDK may be newer. Run:
+```bash
+flutter --version
+flutter upgrade
 ```
-tr_tech_solutions/
-├── lib/                  ← all Flutter source code
-├── supabase/             ← SQL schema files
-├── assets/.env           ← your Supabase keys (create this)
-├── pubspec.yaml
-└── .vscode/              ← VS Code run configs
-```
+Then in `lib/core/theme/app_theme.dart` change `CardTheme(` to `CardThemeData(` if VS Code suggests it.
