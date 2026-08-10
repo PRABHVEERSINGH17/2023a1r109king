@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
+import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
 
 void main() {
@@ -129,5 +131,46 @@ void main() {
     final payments = await repo.getPayments();
     final linked = payments.firstWhere((p) => p['client_id'] == client.id);
     expect(linked['clients']['name'], 'Linked Client');
+  });
+
+  test('demo workspace snapshot round-trip keeps new clients', () async {
+    final repo = DemoRepository();
+    final created = await repo.createClient({
+      'name': 'Persisted Client',
+      'email': 'persist@example.com',
+      'status': 'active',
+    });
+
+    final snapshot = repo.exportSnapshot();
+    final restored = DemoRepository(snapshot: snapshot);
+    final clients = await restored.getClients();
+
+    expect(clients.any((c) => c.id == created.id), isTrue);
+    expect(clients.firstWhere((c) => c.id == created.id).name, 'Persisted Client');
+
+    final invoices = await restored.getInvoices();
+    expect(invoices.any((i) => i.clientId == created.id), isTrue);
+  });
+
+  test('demo persistence saves and restores workspace on device', () async {
+    SharedPreferences.setMockInitialValues({});
+    await DemoPersistence.init();
+    await DemoPersistence.clearWorkspace();
+
+    final repo = DemoRepository();
+    repo.bindPersistence(DemoPersistence.saveWorkspace);
+    final created = await repo.createClient({
+      'name': 'Device Client',
+      'status': 'active',
+      'bootstrap_related': false,
+    });
+
+    // Simulate app restart.
+    await DemoPersistence.init();
+    expect(DemoPersistence.workspace, isNotNull);
+
+    final restored = DemoRepository(snapshot: DemoPersistence.workspace);
+    final clients = await restored.getClients();
+    expect(clients.any((c) => c.id == created.id && c.name == 'Device Client'), isTrue);
   });
 }

@@ -6,6 +6,7 @@ import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
+import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 
 const kDemoEmail = 'admin@trtechsolutions.com';
 const kDemoPassword = 'demo1234';
@@ -47,19 +48,23 @@ class AuthService {
 
   Future<void> enterDemoMode({bool resetWorkspace = false}) async {
     if (resetWorkspace) {
+      await DemoPersistence.clearWorkspace();
       _ref.read(demoWorkspaceVersionProvider.notifier).state++;
       _ref.read(localClientsOverrideProvider.notifier).state = const [];
     }
+    await DemoPersistence.setDemoMode(true);
     _ref.read(demoModeProvider.notifier).state = true;
   }
 
   Future<void> signIn(String email, String password) async {
     // Built-in demo account always works, even when Supabase is configured.
+    // Do NOT reset workspace — refresh/re-login must keep saved clients.
     if (_isDemoCredentials(email, password) || !SupabaseConfig.isConfigured) {
-      await enterDemoMode(resetWorkspace: true);
+      await enterDemoMode(resetWorkspace: false);
       return;
     }
 
+    await DemoPersistence.setDemoMode(false);
     _ref.read(demoModeProvider.notifier).state = false;
     await Supabase.instance.client.auth.signInWithPassword(
       email: email,
@@ -69,7 +74,7 @@ class AuthService {
 
   Future<void> signUp(String email, String password, String fullName) async {
     if (!SupabaseConfig.isConfigured) {
-      await enterDemoMode();
+      await enterDemoMode(resetWorkspace: false);
       return;
     }
 
@@ -87,7 +92,10 @@ class AuthService {
 
   Future<void> signOut() async {
     if (isDemoMode) {
+      // Keep workspace on disk so the next Demo Mode session restores clients.
+      await DemoPersistence.setDemoMode(false);
       _ref.read(demoModeProvider.notifier).state = false;
+      _ref.read(localClientsOverrideProvider.notifier).state = const [];
     }
     if (SupabaseConfig.isConfigured) {
       try {

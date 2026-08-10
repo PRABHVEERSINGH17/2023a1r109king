@@ -68,8 +68,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _enterDemo() async {
     setState(() => _isLoading = true);
     try {
-      // Fresh seeded workspace every time users enter from login.
-      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
+      // Restore saved workspace when present (clients survive refresh).
+      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: false);
       if (mounted) context.go('/dashboard');
     } finally {
       if (mounted) setState(() => _isLoading = false);

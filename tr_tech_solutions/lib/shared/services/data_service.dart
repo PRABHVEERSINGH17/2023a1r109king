@@ -11,6 +11,7 @@ import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/app_repository.dart';
 import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
+import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
 
 class SupabaseRepository implements AppRepository {
@@ -248,9 +249,19 @@ class SupabaseRepository implements AppRepository {
 final demoWorkspaceVersionProvider = StateProvider<int>((ref) => 0);
 
 final demoRepositoryProvider = Provider<DemoRepository>((ref) {
-  // Bumping demoWorkspaceVersionProvider recreates a fresh seeded workspace.
+  // Bumping demoWorkspaceVersionProvider recreates the workspace (reset).
   ref.watch(demoWorkspaceVersionProvider);
-  final repo = DemoRepository();
+
+  final snapshot = DemoPersistence.workspace;
+  final repo = DemoRepository(snapshot: snapshot);
+  repo.bindPersistence(DemoPersistence.saveWorkspace);
+
+  // Persist the initial seed so a refresh keeps the same workspace baseline.
+  if (snapshot == null) {
+    // ignore: unawaited_futures
+    DemoPersistence.saveWorkspace(repo.exportSnapshot());
+  }
+
   ref.keepAlive();
   return repo;
 });

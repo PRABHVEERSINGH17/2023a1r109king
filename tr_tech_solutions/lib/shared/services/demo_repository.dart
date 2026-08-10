@@ -13,18 +13,36 @@ class DemoRepository implements AppRepository {
   final _uuid = const Uuid();
   static const _userId = 'demo-user-001';
   bool _suppressDelay = false;
+  bool _pendingPersist = false;
+  Future<void> Function(Map<String, dynamic> snapshot)? _persister;
 
-  late final List<ClientModel> _clients;
-  late final List<ServiceModel> _services;
-  late final List<InvoiceModel> _invoices;
-  late final List<LeadModel> _leads;
-  late final List<ProjectModel> _projects;
-  late final List<TicketModel> _tickets;
-  late final List<Map<String, dynamic>> _expenses;
-  late final List<Map<String, dynamic>> _payments;
+  late List<ClientModel> _clients;
+  late List<ServiceModel> _services;
+  late List<InvoiceModel> _invoices;
+  late List<LeadModel> _leads;
+  late List<ProjectModel> _projects;
+  late List<TicketModel> _tickets;
+  late List<Map<String, dynamic>> _expenses;
+  late List<Map<String, dynamic>> _payments;
 
-  DemoRepository() {
-    _seed();
+  DemoRepository({Map<String, dynamic>? snapshot}) {
+    if (snapshot != null) {
+      _loadSnapshot(snapshot);
+    } else {
+      _seed();
+    }
+  }
+
+  void bindPersistence(Future<void> Function(Map<String, dynamic> snapshot) persister) {
+    _persister = persister;
+  }
+
+  void _markDirty() => _pendingPersist = true;
+
+  Future<void> _persistNow() async {
+    final persister = _persister;
+    if (persister == null) return;
+    await persister(exportSnapshot());
   }
 
   void _seed() {
@@ -517,9 +535,136 @@ class DemoRepository implements AppRepository {
   Future<T> _delay<T>(T value) async {
     if (!_suppressDelay) {
       await Future.delayed(const Duration(milliseconds: 200));
+      if (_pendingPersist) {
+        _pendingPersist = false;
+        await _persistNow();
+      }
     }
     return value;
   }
+
+  Map<String, dynamic> exportSnapshot() {
+    return {
+      'version': 1,
+      'clients': _clients.map(_clientToStorage).toList(),
+      'services': _services.map(_serviceToStorage).toList(),
+      'invoices': _invoices.map(_invoiceToStorage).toList(),
+      'leads': _leads.map(_leadToStorage).toList(),
+      'projects': _projects.map(_projectToStorage).toList(),
+      'tickets': _tickets.map(_ticketToStorage).toList(),
+      'expenses': _expenses.map((e) => Map<String, dynamic>.from(e)).toList(),
+      'payments': _payments.map((e) => Map<String, dynamic>.from(e)).toList(),
+    };
+  }
+
+  void _loadSnapshot(Map<String, dynamic> snapshot) {
+    _clients = (snapshot['clients'] as List? ?? const [])
+        .map((e) => ClientModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _services = (snapshot['services'] as List? ?? const [])
+        .map((e) => ServiceModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _invoices = (snapshot['invoices'] as List? ?? const [])
+        .map((e) => InvoiceModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _leads = (snapshot['leads'] as List? ?? const [])
+        .map((e) => LeadModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _projects = (snapshot['projects'] as List? ?? const [])
+        .map((e) => ProjectModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _tickets = (snapshot['tickets'] as List? ?? const [])
+        .map((e) => TicketModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .toList();
+    _expenses = (snapshot['expenses'] as List? ?? const [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+    _payments = (snapshot['payments'] as List? ?? const [])
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  Map<String, dynamic> _clientToStorage(ClientModel c) => {
+        'id': c.id,
+        'user_id': c.userId,
+        'name': c.name,
+        'email': c.email,
+        'phone': c.phone,
+        'company': c.company,
+        'address': c.address,
+        'status': c.status,
+        'notes': c.notes,
+        'created_at': c.createdAt.toIso8601String(),
+      };
+
+  Map<String, dynamic> _serviceToStorage(ServiceModel s) => {
+        'id': s.id,
+        'user_id': s.userId,
+        'client_id': s.clientId,
+        'name': s.name,
+        'type': s.type,
+        'provider': s.provider,
+        'expiry_date': s.expiryDate?.toIso8601String().split('T').first,
+        'renewal_cost': s.renewalCost,
+        'status': s.status,
+        'notes': s.notes,
+        if (s.clientName != null) 'clients': {'name': s.clientName},
+      };
+
+  Map<String, dynamic> _invoiceToStorage(InvoiceModel i) => {
+        'id': i.id,
+        'user_id': i.userId,
+        'client_id': i.clientId,
+        'invoice_number': i.invoiceNumber,
+        'amount': i.amount,
+        'tax': i.tax,
+        'total': i.total,
+        'status': i.status,
+        'due_date': i.dueDate?.toIso8601String().split('T').first,
+        'issued_date': i.issuedDate?.toIso8601String().split('T').first,
+        'notes': i.notes,
+        if (i.clientName != null) 'clients': {'name': i.clientName},
+      };
+
+  Map<String, dynamic> _leadToStorage(LeadModel l) => {
+        'id': l.id,
+        'user_id': l.userId,
+        'client_id': l.clientId,
+        'name': l.name,
+        'email': l.email,
+        'phone': l.phone,
+        'company': l.company,
+        'stage': l.stage,
+        'value': l.value,
+        'source': l.source,
+        'notes': l.notes,
+        'created_at': l.createdAt.toIso8601String(),
+      };
+
+  Map<String, dynamic> _projectToStorage(ProjectModel p) => {
+        'id': p.id,
+        'user_id': p.userId,
+        'client_id': p.clientId,
+        'title': p.title,
+        'description': p.description,
+        'status': p.status,
+        'due_date': p.dueDate?.toIso8601String().split('T').first,
+        'budget': p.budget,
+        if (p.clientName != null) 'clients': {'name': p.clientName},
+      };
+
+  Map<String, dynamic> _ticketToStorage(TicketModel t) => {
+        'id': t.id,
+        'user_id': t.userId,
+        'client_id': t.clientId,
+        'ticket_number': t.ticketNumber,
+        'subject': t.subject,
+        'description': t.description,
+        'status': t.status,
+        'priority': t.priority,
+        'created_at': t.createdAt.toIso8601String(),
+        if (t.clientName != null) 'clients': {'name': t.clientName},
+      };
 
   @override
   Future<DashboardStats> getDashboardStats() async {
@@ -553,6 +698,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ClientModel> createClient(Map<String, dynamic> data) async {
+    _markDirty();
     final client = ClientModel(
       id: _uuid.v4(),
       userId: _userId,
@@ -582,6 +728,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ClientModel> updateClient(String id, Map<String, dynamic> data) async {
+    _markDirty();
     final index = _clients.indexWhere((c) => c.id == id);
     if (index < 0) throw Exception('Client not found');
     final updated = _clients[index].copyWith(
@@ -681,6 +828,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteClient(String id) async {
+    _markDirty();
     _clients.removeWhere((c) => c.id == id);
     // Match Supabase ON DELETE SET NULL behavior.
     for (var i = 0; i < _services.length; i++) {
@@ -789,6 +937,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ServiceModel> createService(Map<String, dynamic> data) async {
+    _markDirty();
     final clientId = data['client_id'] as String?;
     final service = ServiceModel(
       id: _uuid.v4(),
@@ -810,6 +959,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteService(String id) async {
+    _markDirty();
     _services.removeWhere((s) => s.id == id);
     await _delay(null);
   }
@@ -819,6 +969,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<InvoiceModel> createInvoice(Map<String, dynamic> data) async {
+    _markDirty();
     final amount = (data['amount'] as num).toDouble();
     final tax = (data['tax'] as num?)?.toDouble() ?? 0;
     final clientId = data['client_id'] as String?;
@@ -841,6 +992,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteInvoice(String id) async {
+    _markDirty();
     _invoices.removeWhere((i) => i.id == id);
     await _delay(null);
   }
@@ -850,6 +1002,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<LeadModel> createLead(Map<String, dynamic> data) async {
+    _markDirty();
     final lead = LeadModel(
       id: _uuid.v4(),
       userId: _userId,
@@ -869,6 +1022,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> updateLeadStage(String id, String stage) async {
+    _markDirty();
     final index = _leads.indexWhere((l) => l.id == id);
     if (index < 0) return;
     final old = _leads[index];
@@ -891,6 +1045,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteLead(String id) async {
+    _markDirty();
     _leads.removeWhere((l) => l.id == id);
     await _delay(null);
   }
@@ -900,6 +1055,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ProjectModel> createProject(Map<String, dynamic> data) async {
+    _markDirty();
     final clientId = data['client_id'] as String?;
     final project = ProjectModel(
       id: _uuid.v4(),
@@ -918,6 +1074,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteProject(String id) async {
+    _markDirty();
     _projects.removeWhere((p) => p.id == id);
     await _delay(null);
   }
@@ -927,6 +1084,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<TicketModel> createTicket(Map<String, dynamic> data) async {
+    _markDirty();
     final clientId = data['client_id'] as String?;
     final ticket = TicketModel(
       id: _uuid.v4(),
@@ -946,6 +1104,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> updateTicketStatus(String id, String status) async {
+    _markDirty();
     final index = _tickets.indexWhere((t) => t.id == id);
     if (index < 0) return;
     final old = _tickets[index];
@@ -966,6 +1125,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> deleteTicket(String id) async {
+    _markDirty();
     _tickets.removeWhere((t) => t.id == id);
     await _delay(null);
   }
@@ -975,6 +1135,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> createExpense(Map<String, dynamic> data) async {
+    _markDirty();
     _expenses.insert(0, {
       'id': _uuid.v4(),
       'description': data['description'],
@@ -991,6 +1152,7 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> createPayment(Map<String, dynamic> data) async {
+    _markDirty();
     final clientId = data['client_id'] as String?;
     final invoiceId = data['invoice_id'] as String?;
     String? invoiceNumber;

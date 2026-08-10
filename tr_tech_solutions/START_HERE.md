@@ -39,6 +39,7 @@ Install → open → **Continue with Demo Mode**.
 2. Tap **Add Client**
 3. Client hub opens with linked invoice, payment, service, project, lead, ticket
 4. Check **Invoices / Payments / Services** — records appear there too
+5. Refresh the page — your clients stay (Demo Mode is saved on this device)
 
 ## If something looks empty
 

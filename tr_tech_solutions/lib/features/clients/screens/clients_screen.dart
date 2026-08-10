@@ -363,7 +363,9 @@ class ClientsScreen extends ConsumerWidget {
     if (confirmed == true) {
       try {
         await ref.read(dataServiceProvider)?.deleteClient(id);
+        forgetClient(ref, id);
         ref.invalidate(clientsProvider);
+        await ref.read(clientsProvider.future);
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

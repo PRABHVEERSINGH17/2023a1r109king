@@ -16,6 +16,12 @@ void rememberClient(WidgetRef ref, ClientModel client) {
   ref.read(localClientsOverrideProvider.notifier).state = next;
 }
 
+void forgetClient(WidgetRef ref, String clientId) {
+  final current = ref.read(localClientsOverrideProvider);
+  ref.read(localClientsOverrideProvider.notifier).state =
+      current.where((c) => c.id != clientId).toList(growable: false);
+}
+
 List<ClientModel> mergeClientsWithOverrides(
   List<ClientModel> fetched,
   List<ClientModel> overrides,
