@@ -88,14 +88,41 @@ flutter build web --release --base-href "/2023a1r109king/"
 
 ---
 
-## Android phone (APK — not website)
+## Android phone (APK — mobile app)
+
+### Build on your PC
 
 ```bash
+git checkout cursor/clickable-dashboard-2b7a
+cd tr_tech_solutions
+flutter pub get
 flutter build apk --release
-# Install: build/app/outputs/flutter-apk/app-release.apk
 ```
 
-Or use the Play Store scripts in `PLAY_STORE.md`.
+APK file:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Or:
+
+```bash
+chmod +x scripts/build_apk.sh
+./scripts/build_apk.sh
+# → release/TR-Tech-Solutions.apk
+```
+
+### Install on phone
+
+1. Copy the APK to your Android phone (USB, Drive, or download link)
+2. Open the APK
+3. Allow **Install unknown apps** for Files/Chrome
+4. Install → Open → tap **Continue with Demo Mode**
+
+Requires Android 6.0+.
+
+Or use the Play Store packaging notes in `PLAY_STORE.md`.
 
 ---
 
