@@ -6,6 +6,7 @@ import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
+import 'package:tr_tech_solutions/features/dashboard/screens/dashboard_screen.dart';
 import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
 import 'package:tr_tech_solutions/features/leads/screens/leads_screen.dart';
 import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
@@ -25,6 +26,43 @@ class SettingsScreen extends ConsumerWidget {
     ref.invalidate(paymentsProvider);
     ref.invalidate(servicesProvider);
     ref.invalidate(ticketsProvider);
+    ref.invalidate(dashboardStatsProvider);
+  }
+
+  Future<void> _goOnline(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Exit Demo Mode?'),
+        content: const Text(
+          'You will leave sample data and create a real online account.\n\n'
+          'Next step: Sign Up with your email (or Google / Apple / LinkedIn).',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Go Online'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    await ref.read(authServiceProvider).exitDemoAndGoOnline();
+    _invalidateAll(ref);
+    if (context.mounted) {
+      context.go('/login?mode=online');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            SupabaseConfig.isConfigured
+                ? 'Demo exited. Create your online account to continue.'
+                : 'Demo exited. Add Supabase keys first (see GO_ONLINE.md).',
+          ),
+        ),
+      );
+    }
   }
 
   @override
@@ -53,10 +91,10 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: Text(email),
                 ),
                 const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.business),
-                  title: const Text('Company'),
-                  subtitle: const Text('TR Technology Solutions LLP'),
+                const ListTile(
+                  leading: Icon(Icons.business),
+                  title: Text('Company'),
+                  subtitle: Text('TR Technology Solutions LLP'),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -67,29 +105,39 @@ class SettingsScreen extends ConsumerWidget {
                   title: const Text('Workspace Mode'),
                   subtitle: Text(
                     isDemo
-                        ? 'Demo Mode — full sample CRM (recommended)'
+                        ? 'Demo Mode — sample data on this device'
                         : SupabaseConfig.isConfigured
-                            ? 'Live Supabase backend'
-                            : 'Supabase not configured — use Demo Mode',
+                            ? 'Online — live Supabase backend'
+                            : 'Online preferred — configure Supabase to sync data',
                   ),
                 ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.refresh_rounded),
-                  title: const Text('Reset Demo Workspace'),
-                  subtitle: const Text('Reload sample clients, invoices, payments & more'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () async {
-                    await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
-                    _invalidateAll(ref);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Demo workspace reset — sample data loaded')),
-                      );
-                      context.go('/dashboard');
-                    }
-                  },
-                ),
+                if (isDemo) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.public_rounded, color: AppColors.primary),
+                    title: const Text('Exit Demo Mode & Go Online'),
+                    subtitle: const Text('Create a real account and use live cloud data'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _goOnline(context, ref),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.refresh_rounded),
+                    title: const Text('Reset Demo Workspace'),
+                    subtitle: const Text('Reload sample clients, invoices, payments & more'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () async {
+                      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
+                      _invalidateAll(ref);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Demo workspace reset — sample data loaded')),
+                        );
+                        context.go('/dashboard');
+                      }
+                    },
+                  ),
+                ],
                 if (!isDemo) ...[
                   const Divider(height: 1),
                   ListTile(

@@ -55,18 +55,39 @@ class AuthService {
       _ref.read(demoWorkspaceVersionProvider.notifier).state++;
       _ref.read(localClientsOverrideProvider.notifier).state = const [];
     }
+    await DemoPersistence.setPreferLive(false);
     await DemoPersistence.setDemoMode(true);
     _ref.read(demoModeProvider.notifier).state = true;
+  }
+
+  /// Leave Demo Mode and return to the online login screen.
+  Future<void> exitDemoAndGoOnline() async {
+    await DemoPersistence.setPreferLive(true);
+    await DemoPersistence.setDemoMode(false);
+    _ref.read(demoModeProvider.notifier).state = false;
+    _ref.read(localClientsOverrideProvider.notifier).state = const [];
+    if (SupabaseConfig.isConfigured) {
+      try {
+        await Supabase.instance.client.auth.signOut();
+      } catch (_) {}
+    }
   }
 
   Future<void> signIn(String email, String password) async {
     // Built-in demo account always works, even when Supabase is configured.
     // Do NOT reset workspace — refresh/re-login must keep saved clients.
-    if (_isDemoCredentials(email, password) || !SupabaseConfig.isConfigured) {
+    if (_isDemoCredentials(email, password)) {
       await enterDemoMode(resetWorkspace: false);
       return;
     }
 
+    if (!SupabaseConfig.isConfigured) {
+      throw StateError(
+        'Online mode needs Supabase. Check assets/supabase.env, or use Demo Mode.',
+      );
+    }
+
+    await DemoPersistence.setPreferLive(true);
     await DemoPersistence.setDemoMode(false);
     _ref.read(demoModeProvider.notifier).state = false;
     await Supabase.instance.client.auth.signInWithPassword(
@@ -77,9 +98,14 @@ class AuthService {
 
   Future<void> signUp(String email, String password, String fullName) async {
     if (!SupabaseConfig.isConfigured) {
-      await enterDemoMode(resetWorkspace: false);
-      return;
+      throw StateError(
+        'Online signup needs Supabase. Check assets/supabase.env, or use Demo Mode.',
+      );
     }
+
+    await DemoPersistence.setPreferLive(true);
+    await DemoPersistence.setDemoMode(false);
+    _ref.read(demoModeProvider.notifier).state = false;
 
     final response = await Supabase.instance.client.auth.signUp(
       email: email,
@@ -105,6 +131,7 @@ class AuthService {
       );
     }
 
+    await DemoPersistence.setPreferLive(true);
     await DemoPersistence.setDemoMode(false);
     _ref.read(demoModeProvider.notifier).state = false;
 

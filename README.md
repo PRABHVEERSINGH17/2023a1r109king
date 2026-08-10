@@ -20,6 +20,9 @@ flutter run -d chrome
 
 On the login screen tap **Continue with Demo Mode**.
 
+To leave demo and use cloud data: **Settings → Exit Demo Mode & Go Online**  
+(or login → **Exit Demo — Go Online**). See `tr_tech_solutions/GO_ONLINE.md`.
+
 That loads a complete working workspace:
 
 - Dashboard KPIs & charts

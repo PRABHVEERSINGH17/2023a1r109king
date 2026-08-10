@@ -42,17 +42,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
       if (mounted) {
         if (!SupabaseConfig.isConfigured) {
-          context.go('/dashboard');
-        } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Account created! Confirm your email in inbox (if required), then sign in.',
-              ),
-            ),
+            const SnackBar(content: Text('Online signup needs Supabase configuration.')),
           );
-          context.go('/login');
+          return;
         }
+
+        final user = ref.read(currentUserProvider);
+        if (user != null) {
+          context.go('/dashboard');
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Account created! If email confirmation is on, check your inbox, then sign in.',
+            ),
+          ),
+        );
+        context.go('/login?mode=online');
       }
     } catch (e) {
       if (mounted) {

@@ -17,10 +17,35 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'admin@trtechsolutions.com');
-  final _passwordController = TextEditingController(text: 'demo1234');
+  late final TextEditingController _emailController;
+  late final TextEditingController _passwordController;
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _onlineMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final mode = GoRouterState.of(context).uri.queryParameters['mode'];
+    final online = mode == 'online';
+    if (online != _onlineMode) {
+      _onlineMode = online;
+      if (_onlineMode) {
+        _emailController.clear();
+        _passwordController.clear();
+      } else if (_emailController.text.isEmpty) {
+        _emailController.text = 'admin@trtechsolutions.com';
+        _passwordController.text = 'demo1234';
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -146,9 +171,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Welcome back',
-              style: TextStyle(
+            Text(
+              _onlineMode ? 'Go Online' : 'Welcome back',
+              style: const TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 fontFamily: AppTypography.display,
@@ -157,9 +182,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Sign in to manage clients, services, and revenue.',
-              style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
+            Text(
+              _onlineMode
+                  ? 'Create or sign in to your live TR Tech account.'
+                  : 'Sign in to manage clients, services, and revenue.',
+              style: const TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
             ),
             const SizedBox(height: 18),
             Container(
@@ -169,9 +196,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                SupabaseConfig.isConfigured
-                    ? 'Demo: admin@trtechsolutions.com / demo1234\nOr continue with Demo Mode instantly.'
-                    : 'Demo Mode is ready — explore the full workspace with sample data.',
+                _onlineMode
+                    ? (SupabaseConfig.isConfigured
+                        ? 'Online mode: use Sign Up with your email, or Google / Apple / LinkedIn.\nThen add your real clients — data saves to the cloud.'
+                        : 'Supabase keys missing. Add them in assets/supabase.env (see GO_ONLINE.md), or use Demo Mode.')
+                    : (SupabaseConfig.isConfigured
+                        ? 'Demo: admin@trtechsolutions.com / demo1234\nOr continue with Demo Mode instantly.'
+                        : 'Demo Mode is ready — explore the full workspace with sample data.'),
                 style: const TextStyle(
                   color: AppColors.brand,
                   fontSize: 12,
@@ -213,54 +244,90 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
             ),
             const SizedBox(height: 22),
-            SizedBox(
-              height: 48,
-              child: ElevatedButton.icon(
+            if (_onlineMode) ...[
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : () => context.go('/signup'),
+                  child: const Text('Create Online Account'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _signIn,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Sign In'),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const SocialAuthButtons(),
+              const SizedBox(height: 14),
+              TextButton(
                 onPressed: _isLoading ? null : _enterDemo,
-                icon: const Icon(Icons.bolt_rounded),
-                label: const Text('Continue with Demo Mode'),
+                child: const Text('Back to Demo Mode'),
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Recommended — full CRM with sample clients, invoices & payments',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 12,
-                fontFamily: AppTypography.body,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 48,
-              child: OutlinedButton(
-                onPressed: _isLoading ? null : _signIn,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Sign In'),
-              ),
-            ),
-            const SizedBox(height: 18),
-            const SocialAuthButtons(),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Don't have an account?",
-                  style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
+            ] else ...[
+              SizedBox(
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: _isLoading ? null : _enterDemo,
+                  icon: const Icon(Icons.bolt_rounded),
+                  label: const Text('Continue with Demo Mode'),
                 ),
-                TextButton(
-                  onPressed: () => context.go('/signup'),
-                  child: const Text('Sign Up'),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Recommended — full CRM with sample clients, invoices & payments',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  fontFamily: AppTypography.body,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 48,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _signIn,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Sign In'),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const SocialAuthButtons(),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: _isLoading ? null : () => context.go('/login?mode=online'),
+                child: const Text('Exit Demo — Go Online'),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Don't have an account?",
+                    style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
+                  ),
+                  TextButton(
+                    onPressed: () => context.go('/signup'),
+                    child: const Text('Sign Up'),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
