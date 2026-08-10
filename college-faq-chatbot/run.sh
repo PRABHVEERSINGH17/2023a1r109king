@@ -2,13 +2,15 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/backend"
+export PATH="$HOME/.local/bin:$PATH"
 
-if [ ! -d ".venv" ]; then
-  python3 -m venv .venv
+if python3 -m venv .venv 2>/dev/null; then
+  source .venv/bin/activate
+  pip install -q -r requirements.txt
+else
+  echo "Note: python3-venv not available, using system/user Python packages."
+  pip install -q -r requirements.txt
 fi
-
-source .venv/bin/activate
-pip install -q -r requirements.txt
 
 echo ""
 echo "  College FAQ Chatbot is starting..."

@@ -9,8 +9,23 @@ const categoryList = document.getElementById("category-list");
 const quickQuestions = document.getElementById("quick-questions");
 const collegeNameEl = document.getElementById("college-name");
 const clearChatBtn = document.getElementById("clear-chat");
+const menuToggle = document.getElementById("menu-toggle");
+const sidebar = document.getElementById("sidebar");
+const sidebarOverlay = document.getElementById("sidebar-overlay");
 
 let isLoading = false;
+
+function closeSidebar() {
+  sidebar?.classList.remove("open");
+  sidebarOverlay?.classList.remove("visible");
+}
+
+menuToggle?.addEventListener("click", () => {
+  sidebar?.classList.toggle("open");
+  sidebarOverlay?.classList.toggle("visible");
+});
+
+sidebarOverlay?.addEventListener("click", closeSidebar);
 
 async function init() {
   try {
@@ -34,6 +49,7 @@ function renderCategories(categories) {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".category-btn").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
+      closeSidebar();
       if (cat.faqs.length > 0) {
         sendMessage(cat.faqs[0].question, false);
       }
@@ -49,7 +65,10 @@ function renderQuickQuestions(categories) {
     const btn = document.createElement("button");
     btn.className = "quick-btn";
     btn.textContent = faq.question;
-    btn.addEventListener("click", () => sendMessage(faq.question, false));
+    btn.addEventListener("click", () => {
+      closeSidebar();
+      sendMessage(faq.question, false);
+    });
     quickQuestions.appendChild(btn);
   });
 }

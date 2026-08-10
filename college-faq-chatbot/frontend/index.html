@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
 <body>
+  <div id="sidebar-overlay" class="sidebar-overlay"></div>
   <div class="app">
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar">
       <div class="sidebar-header">
         <div class="logo">🎓</div>
         <div>
@@ -38,9 +39,12 @@
 
     <main class="chat-panel">
       <header class="chat-header">
-        <div>
-          <h2>FAQ Chatbot</h2>
-          <p id="status-text">Ask anything about admissions, exams, fees & more</p>
+        <div class="header-left">
+          <button id="menu-toggle" class="btn-icon" type="button" aria-label="Open menu">☰</button>
+          <div>
+            <h2>FAQ Chatbot</h2>
+            <p id="status-text">Ask anything about admissions, exams, fees & more</p>
+          </div>
         </div>
         <button id="clear-chat" class="btn-secondary" type="button">Clear Chat</button>
       </header>

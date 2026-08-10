@@ -22,6 +22,12 @@ A full-stack **AI/ML college FAQ chatbot** for minor projects. Students can ask 
 
 ## Quick Start
 
+**Read `START_HERE.md` first** — simplest guide for running the app.
+
+### Windows
+Double-click **`run.bat`** → open **http://localhost:8000**
+
+### Mac / Linux
 ```bash
 cd college-faq-chatbot
 chmod +x run.sh
@@ -29,6 +35,12 @@ chmod +x run.sh
 ```
 
 Then open **http://localhost:8000** in your browser.
+
+### Verify it works
+```bash
+cd college-faq-chatbot/backend
+python test_chatbot.py
+```
 
 ### Manual setup
 
