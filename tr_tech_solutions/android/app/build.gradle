@@ -10,10 +10,40 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+/** Prefer an NDK that is actually installed. Pinning a missing NDK breaks
+ *  incomplete system SDKs such as Ubuntu's /usr/lib/android-sdk. */
+def resolveNdkVersion = {
+    def sdkDirPath = System.getenv("ANDROID_SDK_ROOT") ?: System.getenv("ANDROID_HOME")
+    if (sdkDirPath == null) {
+        def localProps = rootProject.file("local.properties")
+        if (localProps.exists()) {
+            def props = new Properties()
+            localProps.withInputStream { props.load(it) }
+            sdkDirPath = props.getProperty("sdk.dir")
+        }
+    }
+    if (sdkDirPath == null) return null
+
+    def ndkRoot = new File(sdkDirPath, "ndk")
+    if (!ndkRoot.isDirectory()) return null
+
+    def versions = ndkRoot.listFiles()?.findAll { f ->
+        f.isDirectory() && new File(f, "source.properties").isFile()
+    }?.collect { it.name }?.sort()
+
+    if (versions == null || versions.isEmpty()) return null
+    if (versions.contains("27.0.12077973")) return "27.0.12077973"
+    return versions.last()
+}()
+
 android {
     namespace = "com.trtechsolutions.tr_tech_solutions"
+    // Keep compileSdk on Flutter's default (34 on Flutter 3.24).
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+
+    if (resolveNdkVersion != null) {
+        ndkVersion = resolveNdkVersion
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

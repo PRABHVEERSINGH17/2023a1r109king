@@ -17,13 +17,18 @@ Tap **Continue with Demo Mode**.
 
 ```bash
 cd tr_tech_solutions
-flutter build apk --release
+chmod +x scripts/build_apk.sh
+./scripts/build_apk.sh
 ```
+
+If Gradle fails (especially with `Using Android SDK: /usr/lib/android-sdk`), see **`FIX_ANDROID_BUILD.md`**.
 
 Copy to phone:
 
 ```text
 build/app/outputs/flutter-apk/app-release.apk
+# or
+release/TR-Tech-Solutions.apk
 ```
 
 Install → open → **Continue with Demo Mode**.

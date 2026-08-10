@@ -34,8 +34,8 @@ Demo login also works: `admin@trtechsolutions.com` / `demo1234`
 
 ```bash
 cd tr_tech_solutions
-flutter pub get
-flutter build apk --release
+chmod +x scripts/build_apk.sh
+./scripts/build_apk.sh
 ```
 
 Install:
@@ -44,7 +44,8 @@ Install:
 build/app/outputs/flutter-apk/app-release.apk
 ```
 
-Requires **Gradle 8.11.1** (already set on this branch).
+Needs **Java 17+**, Android SDK **API 34**, and this branch’s **Gradle 8.11.1**.  
+If build fails on Ubuntu’s `/usr/lib/android-sdk`, read `tr_tech_solutions/FIX_ANDROID_BUILD.md`.
 
 ## Host web online
 
