@@ -53,9 +53,8 @@ android {
                 // Play Store uploads REQUIRE a release keystore (see PLAY_STORE.md).
                 signingConfig = signingConfigs.debug
             }
-            minifyEnabled = true
-            shrinkResources = true
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            minifyEnabled = false
+            shrinkResources = false
         }
     }
 }

@@ -27,6 +27,10 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
 
+dependency_overrides:
+  # Flutter 3.24 Android build: newer app_links expects flutter.compileSdkVersion
+  app_links: 6.3.2
+
 flutter:
   uses-material-design: true
   assets:

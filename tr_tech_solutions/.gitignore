@@ -5,6 +5,8 @@ android/keystore/
 *.keystore
 *.aab
 *.apk
+release/*.apk
+!release/README.md
 
 # Tooling / build artifacts
 .dart_tool/
