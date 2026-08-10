@@ -100,7 +100,6 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   void _goClients(BuildContext context, WidgetRef ref) {
-    // Ensure clients list is fresh when opened from the dashboard KPI.
     ref.invalidate(clientsProvider);
     _go(context, '/clients');
   }
@@ -130,11 +129,13 @@ class DashboardScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Dashboard',
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Dashboard',
+                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        ),
                         SizedBox(height: 4),
                         Text(
-                          'Tap any card or list item to manage it.',
+                          'Everything is clickable — tap any card, chart, or shortcut.',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ],
@@ -148,7 +149,7 @@ class DashboardScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              _QuickActions(onNavigate: (route) => _go(context, route)),
+              _ModuleGrid(onNavigate: (route) => _go(context, route)),
               const SizedBox(height: 24),
               _buildKpiRow(context, ref, stats, isWide),
               const SizedBox(height: 24),
@@ -156,9 +157,14 @@ class DashboardScreen extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(flex: 2, child: _RevenueChart(onOpen: () => _go(context, '/reports'))),
+                    Expanded(
+                      flex: 2,
+                      child: _RevenueChart(onOpen: () => _go(context, '/reports')),
+                    ),
                     const SizedBox(width: 16),
-                    Expanded(child: _ServicesChart(onOpen: () => _go(context, '/services'))),
+                    Expanded(
+                      child: _ServicesChart(onOpen: () => _go(context, '/services')),
+                    ),
                   ],
                 )
               else ...[
@@ -173,7 +179,9 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     Expanded(child: _LeadsPipeline(onOpen: () => _go(context, '/leads'))),
                     const SizedBox(width: 16),
-                    Expanded(child: _UpcomingRenewals(onOpen: () => _go(context, '/services'))),
+                    Expanded(
+                      child: _UpcomingRenewals(onOpen: () => _go(context, '/services')),
+                    ),
                   ],
                 )
               else ...[
@@ -186,9 +194,13 @@ class DashboardScreen extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(child: _RecentInvoices(onOpen: () => _go(context, '/invoices'))),
+                    Expanded(
+                      child: _RecentInvoices(onOpen: () => _go(context, '/invoices')),
+                    ),
                     const SizedBox(width: 16),
-                    Expanded(child: _RecentProjects(onOpen: () => _go(context, '/projects'))),
+                    Expanded(
+                      child: _RecentProjects(onOpen: () => _go(context, '/projects')),
+                    ),
                   ],
                 )
               else ...[
@@ -204,6 +216,8 @@ class DashboardScreen extends ConsumerWidget {
                 onInvoices: () => _go(context, '/invoices'),
                 onPayments: () => _go(context, '/payments'),
                 onExpenses: () => _go(context, '/expenses'),
+                onReports: () => _go(context, '/reports'),
+                onSettings: () => _go(context, '/settings'),
               ),
             ],
           ),
@@ -236,6 +250,14 @@ class DashboardScreen extends ConsumerWidget {
         onTap: () => _goClients(context, ref),
       ),
       KpiCard(
+        title: 'Active Leads',
+        value: '${stats.totalLeads}',
+        icon: Icons.trending_up,
+        color: AppColors.primaryLight,
+        trend: 'Pipeline',
+        onTap: () => _go(context, '/leads'),
+      ),
+      KpiCard(
         title: 'Active Services',
         value: '${stats.activeServices}',
         icon: Icons.dns,
@@ -259,15 +281,25 @@ class DashboardScreen extends ConsumerWidget {
         color: AppColors.danger,
         onTap: () => _go(context, '/invoices'),
       ),
+      KpiCard(
+        title: 'Open Tickets',
+        value: '${stats.openTickets}',
+        icon: Icons.support_agent,
+        color: AppColors.warning,
+        trend: 'Support',
+        onTap: () => _go(context, '/tickets'),
+      ),
     ];
 
     if (isWide) {
-      return Row(
-        children: cards
-            .map((c) => Expanded(
-                  child: Padding(padding: const EdgeInsets.only(right: 12), child: c),
-                ))
-            .toList(),
+      return SizedBox(
+        height: 168,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: cards.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (_, i) => SizedBox(width: 220, child: cards[i]),
+        ),
       );
     }
 
@@ -279,34 +311,95 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _QuickActions extends StatelessWidget {
+class _ModuleGrid extends StatelessWidget {
   final void Function(String route) onNavigate;
 
-  const _QuickActions({required this.onNavigate});
+  const _ModuleGrid({required this.onNavigate});
+
+  static const _modules = [
+    (Icons.people, 'Clients', '/clients', AppColors.info),
+    (Icons.trending_up, 'Leads', '/leads', AppColors.success),
+    (Icons.dns, 'Services', '/services', AppColors.primary),
+    (Icons.folder, 'Projects', '/projects', AppColors.primaryLight),
+    (Icons.receipt_long, 'Invoices', '/invoices', AppColors.warning),
+    (Icons.payment, 'Payments', '/payments', AppColors.success),
+    (Icons.money_off, 'Expenses', '/expenses', AppColors.info),
+    (Icons.support_agent, 'Tickets', '/tickets', AppColors.warning),
+    (Icons.bar_chart, 'Reports', '/reports', AppColors.primary),
+    (Icons.settings, 'Settings', '/settings', AppColors.textSecondary),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      (Icons.person_add_alt_1, 'Add Client', '/clients', AppColors.info),
-      (Icons.note_add, 'New Invoice', '/invoices', AppColors.primary),
-      (Icons.support_agent, 'New Ticket', '/tickets', AppColors.warning),
-      (Icons.trending_up, 'Add Lead', '/leads', AppColors.success),
-      (Icons.bar_chart, 'Sales Report', '/reports', AppColors.primaryLight),
-      (Icons.settings, 'Settings', '/settings', AppColors.textSecondary),
-    ];
+    final width = MediaQuery.of(context).size.width;
+    final crossAxisCount = width >= 1100
+        ? 5
+        : width >= 700
+            ? 4
+            : width >= 500
+                ? 3
+                : 2;
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: actions.map((a) {
-        return ActionChip(
-          avatar: Icon(a.$1, size: 18, color: a.$4),
-          label: Text(a.$2),
-          onPressed: () => onNavigate(a.$3),
-          backgroundColor: AppColors.surface,
-          side: const BorderSide(color: AppColors.border),
-        );
-      }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Go to module',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _modules.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.4,
+          ),
+          itemBuilder: (context, index) {
+            final m = _modules[index];
+            return Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () => onNavigate(m.$3),
+                borderRadius: BorderRadius.circular(12),
+                mouseCursor: SystemMouseCursors.click,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: m.$4.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(m.$1, color: m.$4, size: 18),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          m.$2,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -331,9 +424,41 @@ class _SectionHeader extends StatelessWidget {
         ),
         TextButton(
           onPressed: onAction,
-          child: Text(actionLabel),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(actionLabel),
+              const SizedBox(width: 2),
+              const Icon(Icons.chevron_right, size: 16),
+            ],
+          ),
         ),
       ],
+    );
+  }
+}
+
+class _ClickableCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final Widget child;
+
+  const _ClickableCard({required this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          mouseCursor: SystemMouseCursors.click,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -352,93 +477,93 @@ class _RevenueChart extends ConsumerWidget {
       return DateFormat('MMM').format(m);
     });
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SectionHeader(title: 'Revenue Overview', actionLabel: 'Open report', onAction: onOpen),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 200,
-                child: spotsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, __) => const Center(child: Text('No data')),
-                  data: (spots) {
-                    final hasData = spots.any((s) => s.y > 0);
-                    if (!hasData) {
-                      return const Center(
-                        child: Text('No revenue yet — tap to open sales report',
-                            style: TextStyle(color: AppColors.textMuted)),
-                      );
-                    }
-                    return LineChart(
-                      LineChartData(
-                        lineTouchData: LineTouchData(
-                          enabled: true,
-                          touchCallback: (event, response) {
-                            if (event is FlTapUpEvent) onOpen();
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Revenue Overview', actionLabel: 'Open report', onAction: onOpen),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: spotsAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => Center(
+                child: TextButton(onPressed: onOpen, child: const Text('Open sales report')),
+              ),
+              data: (spots) {
+                final hasData = spots.any((s) => s.y > 0);
+                if (!hasData) {
+                  return Center(
+                    child: TextButton(
+                      onPressed: onOpen,
+                      child: const Text('No revenue yet — open sales report'),
+                    ),
+                  );
+                }
+                return LineChart(
+                  LineChartData(
+                    lineTouchData: LineTouchData(
+                      enabled: true,
+                      touchCallback: (event, response) {
+                        if (event is FlTapUpEvent) onOpen();
+                      },
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      getDrawingHorizontalLine: (_) => FlLine(
+                        color: AppColors.border.withOpacity(0.5),
+                        strokeWidth: 0.5,
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 50,
+                          getTitlesWidget: (v, _) => Text(
+                            '₹${(v / 1000).toInt()}k',
+                            style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+                          ),
+                        ),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (v, _) {
+                            final i = v.toInt();
+                            if (i < 0 || i >= labels.length) return const SizedBox();
+                            return Text(
+                              labels[i],
+                              style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
+                            );
                           },
                         ),
-                        gridData: FlGridData(
-                          show: true,
-                          drawVerticalLine: false,
-                          getDrawingHorizontalLine: (_) => FlLine(
-                            color: AppColors.border.withOpacity(0.5),
-                            strokeWidth: 0.5,
-                          ),
-                        ),
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 50,
-                              getTitlesWidget: (v, _) => Text(
-                                '₹${(v / 1000).toInt()}k',
-                                style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
-                              ),
-                            ),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (v, _) {
-                                final i = v.toInt();
-                                if (i < 0 || i >= labels.length) return const SizedBox();
-                                return Text(labels[i],
-                                    style: const TextStyle(color: AppColors.textMuted, fontSize: 10));
-                              },
-                            ),
-                          ),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: spots,
-                            isCurved: true,
-                            color: AppColors.primary,
-                            barWidth: 3,
-                            dotData: const FlDotData(show: true),
-                            belowBarData: BarAreaData(
-                              show: true,
-                              color: AppColors.primary.withOpacity(0.1),
-                            ),
-                          ),
-                        ],
                       ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        isCurved: true,
+                        color: AppColors.primary,
+                        barWidth: 3,
+                        dotData: const FlDotData(show: true),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: AppColors.primary.withOpacity(0.1),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -453,86 +578,84 @@ class _ServicesChart extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final distAsync = ref.watch(servicesDistributionProvider);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SectionHeader(title: 'Services Overview', actionLabel: 'Manage', onAction: onOpen),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 200,
-                child: distAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (_, __) => const Center(child: Text('No data')),
-                  data: (dist) {
-                    if (dist.isEmpty) {
-                      return const Center(
-                        child: Text('No services yet — tap to add',
-                            style: TextStyle(color: AppColors.textMuted)),
-                      );
-                    }
-                    final colors = [
-                      AppColors.primary,
-                      AppColors.info,
-                      AppColors.success,
-                      AppColors.warning,
-                      AppColors.danger,
-                    ];
-                    final entries = dist.entries.toList();
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: PieChart(
-                            PieChartData(
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 36,
-                              pieTouchData: PieTouchData(
-                                touchCallback: (event, response) {
-                                  if (event is FlTapUpEvent) onOpen();
-                                },
-                              ),
-                              sections: List.generate(entries.length, (i) {
-                                final total = dist.values.fold(0, (a, b) => a + b);
-                                final pct = (entries[i].value / total * 100).round();
-                                return PieChartSectionData(
-                                  value: entries[i].value.toDouble(),
-                                  title: '$pct%',
-                                  color: colors[i % colors.length],
-                                  radius: 48,
-                                  titleStyle: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                );
-                              }),
-                            ),
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Services Overview', actionLabel: 'Manage', onAction: onOpen),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: distAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => Center(
+                child: TextButton(onPressed: onOpen, child: const Text('Open services')),
+              ),
+              data: (dist) {
+                if (dist.isEmpty) {
+                  return Center(
+                    child: TextButton(
+                      onPressed: onOpen,
+                      child: const Text('No services yet — tap to add'),
+                    ),
+                  );
+                }
+                final colors = [
+                  AppColors.primary,
+                  AppColors.info,
+                  AppColors.success,
+                  AppColors.warning,
+                  AppColors.danger,
+                ];
+                final entries = dist.entries.toList();
+                return Column(
+                  children: [
+                    Expanded(
+                      child: PieChart(
+                        PieChartData(
+                          sectionsSpace: 2,
+                          centerSpaceRadius: 36,
+                          pieTouchData: PieTouchData(
+                            touchCallback: (event, response) {
+                              if (event is FlTapUpEvent) onOpen();
+                            },
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
-                          children: List.generate(entries.length, (i) {
-                            return Text(
-                              '${entries[i].key}: ${entries[i].value}',
-                              style: TextStyle(fontSize: 11, color: colors[i % colors.length]),
+                          sections: List.generate(entries.length, (i) {
+                            final total = dist.values.fold(0, (a, b) => a + b);
+                            final pct = (entries[i].value / total * 100).round();
+                            return PieChartSectionData(
+                              value: entries[i].value.toDouble(),
+                              title: '$pct%',
+                              color: colors[i % colors.length],
+                              radius: 48,
+                              titleStyle: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             );
                           }),
                         ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: List.generate(entries.length, (i) {
+                        return Text(
+                          '${entries[i].key}: ${entries[i].value}',
+                          style: TextStyle(fontSize: 11, color: colors[i % colors.length]),
+                        );
+                      }),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -549,68 +672,63 @@ class _LeadsPipeline extends ConsumerWidget {
     const stages = ['new', 'contacted', 'proposal', 'negotiation', 'won'];
     const labels = ['New Leads', 'Contacted', 'Proposal', 'Negotiation', 'Won'];
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(title: 'Sales Pipeline', actionLabel: 'Open leads', onAction: onOpen),
-            const SizedBox(height: 12),
-            pipelineAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('No data'),
-              data: (pipeline) {
-                if (pipeline.isEmpty) {
-                  return TextButton(
-                    onPressed: onOpen,
-                    child: const Text('No leads yet — add your first lead'),
-                  );
-                }
-                final maxVal = pipeline.values.fold(1, (a, b) => a > b ? a : b);
-                return Column(
-                  children: List.generate(stages.length, (i) {
-                    final count = pipeline[stages[i]] ?? 0;
-                    return InkWell(
-                      onTap: onOpen,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 100,
-                              child: Text(
-                                labels[i],
-                                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                              ),
-                            ),
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: count / maxVal,
-                                  minHeight: 20,
-                                  backgroundColor: AppColors.surfaceLight,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text('$count',
-                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                            const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Sales Pipeline', actionLabel: 'Open leads', onAction: onOpen),
+          const SizedBox(height: 12),
+          pipelineAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => TextButton(onPressed: onOpen, child: const Text('Open leads')),
+            data: (pipeline) {
+              if (pipeline.isEmpty) {
+                return TextButton(
+                  onPressed: onOpen,
+                  child: const Text('No leads yet — add your first lead'),
                 );
-              },
-            ),
-          ],
-        ),
+              }
+              final maxVal = pipeline.values.fold(1, (a, b) => a > b ? a : b);
+              return Column(
+                children: List.generate(stages.length, (i) {
+                  final count = pipeline[stages[i]] ?? 0;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 100,
+                          child: Text(
+                            labels[i],
+                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                        ),
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: count / maxVal,
+                              minHeight: 20,
+                              backgroundColor: AppColors.surfaceLight,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '$count',
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                        const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                      ],
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -625,59 +743,59 @@ class _UpcomingRenewals extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final renewalsAsync = ref.watch(upcomingRenewalsProvider);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(title: 'Upcoming Renewals', actionLabel: 'All services', onAction: onOpen),
-            const SizedBox(height: 8),
-            renewalsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('No data'),
-              data: (services) {
-                if (services.isEmpty) {
-                  return TextButton(
-                    onPressed: onOpen,
-                    child: const Text('No renewals — manage services'),
-                  );
-                }
-                return Column(
-                  children: services.map((s) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      onTap: onOpen,
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.dns, color: AppColors.warning, size: 18),
-                      ),
-                      title: Text(s.name, style: const TextStyle(fontSize: 14)),
-                      subtitle: Text('${s.type} • ${s.clientName ?? "No client"}',
-                          style: const TextStyle(fontSize: 12)),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            Formatters.formatDate(s.expiryDate),
-                            style: const TextStyle(color: AppColors.warning, fontSize: 12),
-                          ),
-                          const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Upcoming Renewals', actionLabel: 'All services', onAction: onOpen),
+          const SizedBox(height: 8),
+          renewalsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => TextButton(onPressed: onOpen, child: const Text('Open services')),
+            data: (services) {
+              if (services.isEmpty) {
+                return TextButton(
+                  onPressed: onOpen,
+                  child: const Text('No renewals — manage services'),
                 );
-              },
-            ),
-          ],
-        ),
+              }
+              return Column(
+                children: services.map((s) {
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    mouseCursor: SystemMouseCursors.click,
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.dns, color: AppColors.warning, size: 18),
+                    ),
+                    title: Text(s.name, style: const TextStyle(fontSize: 14)),
+                    subtitle: Text(
+                      '${s.type} • ${s.clientName ?? "No client"}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          Formatters.formatDate(s.expiryDate),
+                          style: const TextStyle(color: AppColors.warning, fontSize: 12),
+                        ),
+                        const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -692,49 +810,52 @@ class _RecentInvoices extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final invoicesAsync = ref.watch(recentInvoicesProvider);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(title: 'Recent Invoices', actionLabel: 'View all', onAction: onOpen),
-            const SizedBox(height: 8),
-            invoicesAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('No data'),
-              data: (invoices) {
-                if (invoices.isEmpty) {
-                  return TextButton(
-                    onPressed: onOpen,
-                    child: const Text('No invoices — create one'),
-                  );
-                }
-                return Column(
-                  children: invoices.map((inv) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      onTap: onOpen,
-                      title: Text(inv.invoiceNumber, style: const TextStyle(fontSize: 14)),
-                      subtitle: Text(inv.clientName ?? 'No client', style: const TextStyle(fontSize: 12)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(Formatters.formatCurrency(inv.total),
-                              style: const TextStyle(fontWeight: FontWeight.w600)),
-                          const SizedBox(width: 8),
-                          StatusBadge(status: inv.status, compact: true),
-                          const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Recent Invoices', actionLabel: 'View all', onAction: onOpen),
+          const SizedBox(height: 8),
+          invoicesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => TextButton(onPressed: onOpen, child: const Text('Open invoices')),
+            data: (invoices) {
+              if (invoices.isEmpty) {
+                return TextButton(
+                  onPressed: onOpen,
+                  child: const Text('No invoices — create one'),
                 );
-              },
-            ),
-          ],
-        ),
+              }
+              return Column(
+                children: invoices.map((inv) {
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    mouseCursor: SystemMouseCursors.click,
+                    title: Text(inv.invoiceNumber, style: const TextStyle(fontSize: 14)),
+                    subtitle: Text(
+                      inv.clientName ?? 'No client',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          Formatters.formatCurrency(inv.total),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(width: 8),
+                        StatusBadge(status: inv.status, compact: true),
+                        const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -749,46 +870,47 @@ class _RecentProjects extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final projectsAsync = ref.watch(recentProjectsProvider);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionHeader(title: 'Recent Projects', actionLabel: 'View all', onAction: onOpen),
-            const SizedBox(height: 8),
-            projectsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (_, __) => const Text('No data'),
-              data: (projects) {
-                if (projects.isEmpty) {
-                  return TextButton(
-                    onPressed: onOpen,
-                    child: const Text('No projects — create one'),
-                  );
-                }
-                return Column(
-                  children: projects.map((p) {
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      onTap: onOpen,
-                      title: Text(p.title, style: const TextStyle(fontSize: 14)),
-                      subtitle: Text(p.clientName ?? 'No client', style: const TextStyle(fontSize: 12)),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          StatusBadge(status: p.status, compact: true),
-                          const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
-                        ],
-                      ),
-                    );
-                  }).toList(),
+    return _ClickableCard(
+      onTap: onOpen,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: 'Recent Projects', actionLabel: 'View all', onAction: onOpen),
+          const SizedBox(height: 8),
+          projectsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => TextButton(onPressed: onOpen, child: const Text('Open projects')),
+            data: (projects) {
+              if (projects.isEmpty) {
+                return TextButton(
+                  onPressed: onOpen,
+                  child: const Text('No projects — create one'),
                 );
-              },
-            ),
-          ],
-        ),
+              }
+              return Column(
+                children: projects.map((p) {
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    mouseCursor: SystemMouseCursors.click,
+                    title: Text(p.title, style: const TextStyle(fontSize: 14)),
+                    subtitle: Text(
+                      p.clientName ?? 'No client',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        StatusBadge(status: p.status, compact: true),
+                        const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -801,6 +923,8 @@ class _AlertsSection extends StatelessWidget {
   final VoidCallback onInvoices;
   final VoidCallback onPayments;
   final VoidCallback onExpenses;
+  final VoidCallback onReports;
+  final VoidCallback onSettings;
 
   const _AlertsSection({
     required this.openTickets,
@@ -809,46 +933,42 @@ class _AlertsSection extends StatelessWidget {
     required this.onInvoices,
     required this.onPayments,
     required this.onExpenses,
+    required this.onReports,
+    required this.onSettings,
   });
 
   @override
   Widget build(BuildContext context) {
+    final items = [
+      (Icons.support_agent, AppColors.warning, '$openTickets open support tickets', onTickets),
+      (Icons.warning_amber, AppColors.danger, '$overdueCount overdue invoices', onInvoices),
+      (Icons.payment, AppColors.success, 'Record a payment', onPayments),
+      (Icons.money_off, AppColors.info, 'Track an expense', onExpenses),
+      (Icons.bar_chart, AppColors.primary, 'Open sales report', onReports),
+      (Icons.settings, AppColors.textSecondary, 'Open settings', onSettings),
+    ];
+
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Quick Links & Alerts',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const Text(
+              'Quick Links & Alerts',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 8),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.support_agent, color: AppColors.warning),
-              title: Text('$openTickets open support tickets'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: onTickets,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.warning_amber, color: AppColors.danger),
-              title: Text('$overdueCount overdue invoices'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: onInvoices,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.payment, color: AppColors.success),
-              title: const Text('Record a payment'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: onPayments,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.money_off, color: AppColors.info),
-              title: const Text('Track an expense'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: onExpenses,
+            ...items.map(
+              (item) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                mouseCursor: SystemMouseCursors.click,
+                leading: Icon(item.$1, color: item.$2),
+                title: Text(item.$3),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: item.$4,
+              ),
             ),
           ],
         ),
