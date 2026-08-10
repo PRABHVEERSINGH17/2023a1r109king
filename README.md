@@ -58,7 +58,8 @@ flutter build web --release
 
 Upload `build/web` to [Netlify Drop](https://app.netlify.com/drop).
 
-See `tr_tech_solutions/HOSTING.md`.
+Or open the hosted install page and use **Install app / Add to Home Screen** / download the APK.  
+See `tr_tech_solutions/INSTALL_APP.md`.
 
 ## Live Supabase (optional)
 
