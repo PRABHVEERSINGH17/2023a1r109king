@@ -12,6 +12,7 @@ import 'package:uuid/uuid.dart';
 class DemoRepository implements AppRepository {
   final _uuid = const Uuid();
   static const _userId = 'demo-user-001';
+  bool _suppressDelay = false;
 
   late final List<ClientModel> _clients;
   late final List<ServiceModel> _services;
@@ -509,7 +510,9 @@ class DemoRepository implements AppRepository {
   }
 
   Future<T> _delay<T>(T value) async {
-    await Future.delayed(const Duration(milliseconds: 200));
+    if (!_suppressDelay) {
+      await Future.delayed(const Duration(milliseconds: 200));
+    }
     return value;
   }
 
@@ -562,7 +565,12 @@ class DemoRepository implements AppRepository {
     // Creating a client automatically creates linked lead + related records.
     final bootstrap = data['bootstrap_related'] as bool? ?? true;
     if (bootstrap) {
-      await bootstrapRelatedRecordsForClient(this, client);
+      _suppressDelay = true;
+      try {
+        await bootstrapRelatedRecordsForClient(this, client);
+      } finally {
+        _suppressDelay = false;
+      }
     }
     return _delay(client);
   }

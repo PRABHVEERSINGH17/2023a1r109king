@@ -2,35 +2,39 @@
 
 Flutter + Supabase business management app.
 
-## App location
+## Important
+
+Use this branch (not `main`):
+
+```bash
+git fetch origin
+git checkout cursor/clickable-dashboard-2b7a
+cd tr_tech_solutions
+flutter pub get
+flutter run -d chrome
+```
+
+On login, tap **Continue with Demo Mode**  
+(or `admin@trtechsolutions.com` / `demo1234`)
+
+## What works now
+
+- Modern teal UI
+- Add Client → auto-creates lead, project, invoice, payment, service, ticket
+- Open a client hub to see everything linked
+
+## App folder
 
 ```text
 tr_tech_solutions/
 ```
 
-## Branch to use
+## Host online
 
 ```bash
-git checkout cursor/clickable-dashboard-2b7a
 cd tr_tech_solutions
+flutter build web --release
+# then drag build/web to https://app.netlify.com/drop
 ```
 
-## Run
-
-```bash
-flutter pub get
-flutter run -d chrome
-```
-
-Login: **Continue with Demo Mode**  
-(or `admin@trtechsolutions.com` / `demo1234`)
-
-## Phone
-
-- Browser / APK: see `tr_tech_solutions/HOSTING.md`
-- Android APK build: `flutter build apk --release`
-- Output: `build/app/outputs/flutter-apk/app-release.apk`
-
-## Modules included
-
-Dashboard, Clients, Leads, Services, Projects, Invoices, Payments, Expenses, Tickets, Reports, Settings
+More: `tr_tech_solutions/HOSTING.md`

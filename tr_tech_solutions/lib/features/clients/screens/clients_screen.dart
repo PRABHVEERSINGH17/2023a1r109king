@@ -165,7 +165,7 @@ class ClientsScreen extends ConsumerWidget {
                           crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 1.55,
+                          childAspectRatio: 1.75,
                         ),
                         itemCount: clients.length,
                         itemBuilder: (context, index) => _ClientCard(
@@ -243,6 +243,30 @@ class ClientsScreen extends ConsumerWidget {
                   'status': status,
                 };
 
+                showDialog(
+                  context: ctx,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(strokeWidth: 2.5),
+                            ),
+                            SizedBox(width: 14),
+                            Text('Creating client & related records…'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+
                 try {
                   if (client == null) {
                     await service.createClient(data);
@@ -253,7 +277,10 @@ class ClientsScreen extends ConsumerWidget {
                     ref.invalidate(paymentsProvider);
                     ref.invalidate(servicesProvider);
                     ref.invalidate(ticketsProvider);
-                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx); // loading
+                      Navigator.pop(ctx); // form
+                    }
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -266,10 +293,14 @@ class ClientsScreen extends ConsumerWidget {
                   } else {
                     await service.updateClient(client.id, data);
                     ref.invalidate(clientsProvider);
-                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx); // loading
+                      Navigator.pop(ctx); // form
+                    }
                   }
                 } catch (e) {
                   if (ctx.mounted) {
+                    Navigator.pop(ctx); // loading
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Could not save client: $e')),
                     );
