@@ -22,45 +22,48 @@ A full-featured business management platform built with **Flutter** and **Supaba
 - [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.24+)
 - A [Supabase](https://supabase.com) project
 
-## Setup
+## Quick start (works immediately — no Supabase needed)
 
-### 1. Supabase Database
+```bash
+cd tr_tech_solutions
+flutter pub get
+flutter run -d chrome
+```
+
+On the login screen:
+- Click **Explore Demo Dashboard**, or
+- Sign in with the pre-filled demo credentials (`admin@trtechsolutions.com` / `demo1234`)
+
+The app ships with full sample data (clients, invoices, leads, services, tickets, etc.) so every screen works out of the box.
+
+## Connect your Supabase backend (optional)
+
+### 1. Run the database schema
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run the entire contents of [`supabase/schema.sql`](supabase/schema.sql)
-3. Go to **Settings → API** and copy your **Project URL** and **anon public key**
+2. Go to **SQL Editor** and run [`supabase/schema.sql`](supabase/schema.sql)
+3. Copy **Project URL** and **anon key** from **Settings → API**
 
-### 2. Configure Credentials
+### 2. Add credentials
 
-Edit `assets/.env` with your Supabase credentials:
+Edit `assets/.env`:
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 3. Enable Email Auth in Supabase
+### 3. Enable Email Auth
 
-1. Go to **Authentication → Providers → Email**
-2. Enable **Email** provider
-3. For development, you can disable **Confirm email** under Email settings
+Authentication → Providers → Email → enable. Disable **Confirm email** for local development.
 
-### 4. Run the App
+### 4. Restart the app
 
 ```bash
-cd tr_tech_solutions
-flutter pub get
-flutter run -d chrome    # Web
-flutter run              # Mobile/Desktop
+flutter run -d chrome
 ```
 
-Or pass credentials via dart-define:
-
-```bash
-flutter run -d chrome \
-  --dart-define=SUPABASE_URL=https://xxx.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=your-key
-```
+With credentials configured, login uses real Supabase Auth and all CRUD hits your database.
 
 ## Project Structure
 

@@ -8,13 +8,22 @@ import 'package:tr_tech_solutions/router/app_router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: 'assets/.env');
 
-  final url = SupabaseConfig.url;
-  final anonKey = SupabaseConfig.anonKey;
+  try {
+    await dotenv.load(fileName: 'assets/.env');
+  } catch (_) {
+    try {
+      await dotenv.load(fileName: 'assets/.env.example');
+    } catch (_) {
+      // Demo mode works without env files.
+    }
+  }
 
-  if (url.isNotEmpty && anonKey.isNotEmpty && !url.contains('YOUR_SUPABASE')) {
-    await Supabase.initialize(url: url, anonKey: anonKey); // ignore: deprecated_member_use
+  if (SupabaseConfig.isConfigured) {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey, // ignore: deprecated_member_use
+    );
   }
 
   runApp(const ProviderScope(child: TrTechApp()));
