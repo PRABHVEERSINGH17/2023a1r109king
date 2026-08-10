@@ -2,19 +2,29 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/backend"
-export PATH="$HOME/.local/bin:$PATH"
 
-if python3 -m venv .venv 2>/dev/null; then
-  source .venv/bin/activate
-  pip install -q -r requirements.txt
-else
-  echo "Note: python3-venv not available, using system/user Python packages."
-  pip install -q -r requirements.txt
+if ! python3 -m venv --help >/dev/null 2>&1; then
+  echo ""
+  echo "  ERROR: python3-venv is not installed."
+  echo "  Run this first:"
+  echo "    sudo apt update && sudo apt install -y python3-venv python3-pip"
+  echo ""
+  exit 1
 fi
+
+if [ ! -d ".venv" ]; then
+  echo "Creating virtual environment..."
+  python3 -m venv .venv
+fi
+
+source .venv/bin/activate
+pip install -q --upgrade pip
+pip install -q -r requirements.txt
 
 echo ""
 echo "  College FAQ Chatbot is starting..."
 echo "  Open http://localhost:8000 in your browser"
+echo "  Press Ctrl+C to stop"
 echo ""
 
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
