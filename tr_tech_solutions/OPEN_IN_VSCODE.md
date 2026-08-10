@@ -4,68 +4,41 @@
 
 1. [Visual Studio Code](https://code.visualstudio.com/)
 2. [Flutter SDK](https://docs.flutter.dev/get-started/install)
-3. In VS Code, install these extensions when prompted:
-   - **Dart**
-   - **Flutter**
+3. In VS Code, install extensions: **Dart** and **Flutter**
 
 ## 2. Get the code
-
-### Option A — Clone from GitHub
 
 ```bash
 git clone https://github.com/PRABHVEERSINGH17/2023a1r109king.git
 cd 2023a1r109king
-git checkout cursor/tr-tech-demo-mode-2b7a
+git checkout cursor/clickable-dashboard-2b7a
 code tr_tech_solutions
 ```
 
-### Option B — Open folder already on your PC
+## 3. Install packages
 
-In VS Code:
-
-**File → Open Folder…** → select `tr_tech_solutions`
-
-## 3. Add your Supabase keys
-
-Create file `assets/.env` inside `tr_tech_solutions`:
-
-```env
-SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
-SUPABASE_ANON_KEY=paste-your-anon-key-here
-```
-
-## 4. Install packages
-
-In VS Code terminal (`Ctrl + `` `):
+In VS Code terminal:
 
 ```bash
 flutter pub get
 ```
 
-## 5. Run the app
+Supabase keys are already in `assets/supabase.env`.
 
-1. Press **F5**, or
-2. Click **Run → Start Debugging**, or
-3. Choose **TR Tech (Chrome)** from the Run and Debug panel
+## 4. Run the app
 
-Or in terminal:
-
+**Chrome (web):**
 ```bash
 flutter run -d chrome
 ```
 
-## 6. Login
+**Or press F5** in VS Code.
 
-- Click **Explore Demo Dashboard**, or
-- Sign up / sign in with your email (Supabase auth)
+## 5. Login
 
-## Project location
+Tap **Continue with Demo Mode**  
+(or email `admin@trtechsolutions.com` / password `demo1234`)
 
-```
-tr_tech_solutions/
-├── lib/                  ← all Flutter source code
-├── supabase/             ← SQL schema files
-├── assets/.env           ← your Supabase keys (create this)
-├── pubspec.yaml
-└── .vscode/              ← VS Code run configs
-```
+## Host online
+
+See **[HOSTING.md](HOSTING.md)** — build web and drag `build/web` to Netlify Drop for a live URL.

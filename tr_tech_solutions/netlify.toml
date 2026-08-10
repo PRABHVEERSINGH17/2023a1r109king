@@ -1,0 +1,12 @@
+# Use after running: flutter build web --release
+# Then deploy the build/web folder (Netlify Drop or: netlify deploy --dir=build/web)
+
+[build]
+  publish = "build/web"
+  # If Netlify should build for you, install Flutter in the build image first.
+  # Easiest path: build locally, then drag build/web to https://app.netlify.com/drop
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
