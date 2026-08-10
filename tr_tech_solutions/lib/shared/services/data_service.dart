@@ -81,11 +81,8 @@ class SupabaseRepository implements AppRepository {
     final response = await _client.from('clients').insert(data).select().single();
     final client = ClientModel.fromJson(response);
     if (bootstrap) {
-      try {
-        await bootstrapRelatedRecordsForClient(this, client);
-      } catch (_) {
-        // Client is saved even if related starter records fail (schema/RLS).
-      }
+      // Always attempt linked records; individual failures are handled inside.
+      await bootstrapRelatedRecordsForClient(this, client);
     }
     return client;
   }

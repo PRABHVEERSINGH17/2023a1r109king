@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
 
 void main() {
@@ -66,6 +67,31 @@ void main() {
     final lead = leads.firstWhere((l) => l.clientId == client.id);
     expect(lead.name, 'Auto Client');
     expect(lead.stage, 'won');
+  });
+
+  test('ensureClientRelatedRecords fills an empty client hub', () async {
+    final repo = DemoRepository();
+    final client = await repo.createClient({
+      'name': 'Bare Client',
+      'status': 'active',
+      'bootstrap_related': false,
+    });
+
+    expect(
+      (await repo.getLeads()).where((l) => l.clientId == client.id),
+      isEmpty,
+    );
+
+    final result = await ensureClientRelatedRecords(repo, client);
+    expect(result.createdCount, greaterThanOrEqualTo(6));
+    expect(
+      (await repo.getInvoices()).where((i) => i.clientId == client.id),
+      isNotEmpty,
+    );
+    expect(
+      (await repo.getPayments()).where((p) => p['client_id'] == client.id),
+      isNotEmpty,
+    );
   });
 
   test('creating project/payment/invoice links to client', () async {

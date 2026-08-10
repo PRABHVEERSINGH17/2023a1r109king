@@ -14,6 +14,7 @@ import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart
 import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
 import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
@@ -269,7 +270,9 @@ class ClientsScreen extends ConsumerWidget {
 
                 try {
                   if (client == null) {
-                    await service.createClient(data);
+                    final created = await service.createClient(data);
+                    // Guarantee linked modules exist even if create-path partially failed.
+                    await ensureClientRelatedRecords(service, created);
                     ref.invalidate(clientsProvider);
                     ref.invalidate(leadsProvider);
                     ref.invalidate(projectsProvider);
@@ -285,10 +288,11 @@ class ClientsScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            'Client created — lead, project, invoice, payment, service & ticket were added automatically',
+                            'Client created with linked lead, project, invoice, payment, service & ticket',
                           ),
                         ),
                       );
+                      context.go('/clients/${created.id}');
                     }
                   } else {
                     await service.updateClient(client.id, data);

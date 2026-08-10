@@ -14,15 +14,27 @@ import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart
 import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
 import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
+import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
-class ClientDetailScreen extends ConsumerWidget {
+class ClientDetailScreen extends ConsumerStatefulWidget {
   final String clientId;
 
   const ClientDetailScreen({super.key, required this.clientId});
 
-  Future<void> _refresh(WidgetRef ref) async {
+  @override
+  ConsumerState<ClientDetailScreen> createState() => _ClientDetailScreenState();
+}
+
+class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
+  bool _ensuring = false;
+  bool _ensureAttempted = false;
+
+  String get clientId => widget.clientId;
+
+  Future<void> _refresh() async {
     ref.invalidate(projectsProvider);
     ref.invalidate(invoicesProvider);
     ref.invalidate(servicesProvider);
@@ -39,8 +51,33 @@ class ClientDetailScreen extends ConsumerWidget {
     return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
+  Future<void> _ensureLinked(ClientModel client) async {
+    if (_ensuring || _ensureAttempted) return;
+    _ensureAttempted = true;
+    final service = ref.read(dataServiceProvider);
+    if (service == null) return;
+    setState(() => _ensuring = true);
+    try {
+      final result = await ensureClientRelatedRecords(service, client);
+      if (result.createdCount > 0) {
+        await _refresh();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Linked ${result.createdTypes.join(', ')} to ${client.name}',
+              ),
+            ),
+          );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _ensuring = false);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final clientsAsync = ref.watch(clientsProvider);
     final projectsAsync = ref.watch(projectsProvider);
     final invoicesAsync = ref.watch(invoicesProvider);
@@ -48,6 +85,13 @@ class ClientDetailScreen extends ConsumerWidget {
     final ticketsAsync = ref.watch(ticketsProvider);
     final paymentsAsync = ref.watch(paymentsProvider);
     final leadsAsync = ref.watch(leadsProvider);
+
+    final relatedLoading = projectsAsync.isLoading ||
+        invoicesAsync.isLoading ||
+        servicesAsync.isLoading ||
+        ticketsAsync.isLoading ||
+        paymentsAsync.isLoading ||
+        leadsAsync.isLoading;
 
     return clientsAsync.when(
       loading: () => const LoadingWidget(),
@@ -76,11 +120,29 @@ class ClientDetailScreen extends ConsumerWidget {
             servicesAsync.valueOrNull?.where((s) => s.clientId == clientId).toList() ?? const [];
         final tickets =
             ticketsAsync.valueOrNull?.where((t) => t.clientId == clientId).toList() ?? const [];
-        final payments =
-            paymentsAsync.valueOrNull?.where((p) => p['client_id'] == clientId).toList() ??
-                const [];
+        final payments = paymentsAsync.valueOrNull
+                ?.where((p) => p['client_id']?.toString() == clientId)
+                .toList() ??
+            const [];
         final leads =
             leadsAsync.valueOrNull?.where((l) => l.clientId == clientId).toList() ?? const [];
+
+        final allEmpty = projects.isEmpty &&
+            invoices.isEmpty &&
+            services.isEmpty &&
+            tickets.isEmpty &&
+            payments.isEmpty &&
+            leads.isEmpty;
+
+        if (!relatedLoading && allEmpty && !_ensureAttempted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _ensureLinked(client!);
+          });
+        }
+
+        if ((relatedLoading || _ensuring) && allEmpty) {
+          return const LoadingWidget();
+        }
 
         final paidTotal = payments.fold<double>(
           0,
@@ -107,7 +169,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   ElevatedButton.icon(
                     onPressed: () async {
                       await showLinkedInvoiceDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     icon: const Icon(Icons.receipt_long, size: 18),
                     label: const Text('Add Invoice'),
@@ -115,7 +177,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await showLinkedPaymentDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     icon: const Icon(Icons.payment, size: 18),
                     label: const Text('Add Payment'),
@@ -123,7 +185,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await showLinkedProjectDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     icon: const Icon(Icons.folder, size: 18),
                     label: const Text('Add Project'),
@@ -131,7 +193,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await showLinkedServiceDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     icon: const Icon(Icons.dns, size: 18),
                     label: const Text('Add Service'),
@@ -139,7 +201,7 @@ class ClientDetailScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () async {
                       await showLinkedTicketDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     icon: const Icon(Icons.support_agent, size: 18),
                     label: const Text('Add Ticket'),
@@ -187,7 +249,7 @@ class ClientDetailScreen extends ConsumerWidget {
                     empty: projects.isEmpty,
                     onAdd: () async {
                       await showLinkedProjectDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     children: projects
                         .map(
@@ -204,7 +266,7 @@ class ClientDetailScreen extends ConsumerWidget {
                     empty: invoices.isEmpty,
                     onAdd: () async {
                       await showLinkedInvoiceDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     children: invoices
                         .map(
@@ -221,7 +283,7 @@ class ClientDetailScreen extends ConsumerWidget {
                     empty: services.isEmpty,
                     onAdd: () async {
                       await showLinkedServiceDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     children: services
                         .map(
@@ -238,7 +300,7 @@ class ClientDetailScreen extends ConsumerWidget {
                     empty: payments.isEmpty,
                     onAdd: () async {
                       await showLinkedPaymentDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     children: payments
                         .map(
@@ -268,7 +330,7 @@ class ClientDetailScreen extends ConsumerWidget {
                     empty: tickets.isEmpty,
                     onAdd: () async {
                       await showLinkedTicketDialog(context, ref, clientId: clientId);
-                      await _refresh(ref);
+                      await _refresh();
                     },
                     children: tickets
                         .map(
