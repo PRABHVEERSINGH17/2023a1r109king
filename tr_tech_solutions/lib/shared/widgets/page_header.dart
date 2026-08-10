@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 
@@ -18,68 +19,83 @@ class PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = AppBreakpoints.isPhone(context);
+    final titleBlock = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          (eyebrow ?? 'TR Tech Solutions').toUpperCase(),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.4,
+            color: AppColors.primary,
+            fontFamily: AppTypography.body,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: narrow ? 26 : 32,
+            fontWeight: FontWeight.w700,
+            fontFamily: AppTypography.display,
+            letterSpacing: -1.0,
+            color: AppColors.textPrimary,
+            height: 1.05,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Text(
+              subtitle!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontFamily: AppTypography.body,
+                height: 1.45,
+                fontSize: 14.5,
+              ),
+            ),
+          ),
+        ],
+        const SizedBox(height: 14),
+        Container(
+          width: 42,
+          height: 3,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(99),
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryLight],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    if (action == null) return titleBlock;
+
+    // On phones, stack actions under the title to avoid horizontal overflow.
+    if (narrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleBlock,
+          const SizedBox(height: 14),
+          Align(alignment: Alignment.centerLeft, child: action!),
+        ],
+      );
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                (eyebrow ?? 'TR Tech Solutions').toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.4,
-                  color: AppColors.primary,
-                  fontFamily: AppTypography.body,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: AppTypography.display,
-                  letterSpacing: -1.0,
-                  color: AppColors.textPrimary,
-                  height: 1.05,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: Text(
-                    subtitle!,
-                    style: const TextStyle(
-                      color: AppColors.textSecondary,
-                      fontFamily: AppTypography.body,
-                      height: 1.45,
-                      fontSize: 14.5,
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              Container(
-                width: 42,
-                height: 3,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(99),
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (action != null) ...[
-          const SizedBox(width: 12),
-          action!,
-        ],
+        Expanded(child: titleBlock),
+        const SizedBox(width: 12),
+        Flexible(child: Align(alignment: Alignment.topRight, child: action!)),
       ],
     );
   }

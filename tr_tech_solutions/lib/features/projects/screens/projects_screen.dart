@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/shared/models/project.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
 final projectsProvider = FutureProvider<List<ProjectModel>>((ref) async {
@@ -22,7 +24,7 @@ class ProjectsScreen extends ConsumerWidget {
     final projectsAsync = ref.watch(projectsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,35 +51,49 @@ class ProjectsScreen extends ConsumerWidget {
                     onAction: () => showLinkedProjectDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Title')),
-                        DataColumn(label: Text('Client')),
-                        DataColumn(label: Text('Status')),
-                        DataColumn(label: Text('Due Date')),
-                        DataColumn(label: Text('Budget')),
-                        DataColumn(label: Text('Actions')),
-                      ],
-                      rows: projects.map((p) {
-                        return DataRow(cells: [
-                          DataCell(Text(p.title)),
-                          DataCell(Text(p.clientName ?? '-')),
-                          DataCell(StatusBadge(status: p.status, compact: true)),
-                          DataCell(Text(Formatters.formatDate(p.dueDate))),
-                          DataCell(Text(Formatters.formatCurrency(p.budget))),
-                          DataCell(IconButton(
-                            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                            onPressed: () async {
-                              await ref.read(dataServiceProvider)?.deleteProject(p.id);
-                              ref.invalidate(projectsProvider);
-                            },
-                          )),
-                        ]);
-                      }).toList(),
-                    ),
+
+                Widget deleteBtn(ProjectModel p) => IconButton(
+                      icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                      onPressed: () async {
+                        await ref.read(dataServiceProvider)?.deleteProject(p.id);
+                        ref.invalidate(projectsProvider);
+                      },
+                    );
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Title')),
+                      DataColumn(label: Text('Client')),
+                      DataColumn(label: Text('Status')),
+                      DataColumn(label: Text('Due Date')),
+                      DataColumn(label: Text('Budget')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: projects.map((p) {
+                      return DataRow(cells: [
+                        DataCell(Text(p.title)),
+                        DataCell(Text(p.clientName ?? '-')),
+                        DataCell(StatusBadge(status: p.status, compact: true)),
+                        DataCell(Text(Formatters.formatDate(p.dueDate))),
+                        DataCell(Text(Formatters.formatCurrency(p.budget))),
+                        DataCell(deleteBtn(p)),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: projects.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final p = projects[index];
+                      return MobileRecordTile(
+                        title: p.title,
+                        subtitle:
+                            '${p.clientName ?? 'No client'} · Budget ${Formatters.formatCurrency(p.budget)} · Due ${Formatters.formatDate(p.dueDate)}',
+                        badge: StatusBadge(status: p.status, compact: true),
+                        actions: [deleteBtn(p)],
+                      );
+                    },
                   ),
                 );
               },

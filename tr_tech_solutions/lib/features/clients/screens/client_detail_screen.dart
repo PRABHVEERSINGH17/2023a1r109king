@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
@@ -165,7 +166,7 @@ class _ClientDetailScreenState extends ConsumerState<ClientDetailScreen> {
         );
 
         return ListView(
-          padding: const EdgeInsets.all(24),
+          padding: AppBreakpoints.pagePadding(context),
           children: [
             FadeInUp(
               child: _HeroBanner(
@@ -380,9 +381,10 @@ class _HeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = AppBreakpoints.isPhone(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(narrow ? 16 : 22),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         gradient: const LinearGradient(
@@ -419,15 +421,16 @@ class _HeroBanner extends StatelessWidget {
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
                   const Spacer(),
-                  StatusBadge(status: client.status),
+                  Flexible(child: StatusBadge(status: client.status)),
                 ],
               ),
               const SizedBox(height: 18),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 64,
-                    height: 64,
+                    width: narrow ? 52 : 64,
+                    height: narrow ? 52 : 64,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.14),
@@ -436,15 +439,15 @@ class _HeroBanner extends StatelessWidget {
                     ),
                     child: Text(
                       initials,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppTypography.display,
                         fontWeight: FontWeight.w700,
-                        fontSize: 22,
+                        fontSize: narrow ? 18 : 22,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: narrow ? 12 : 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,8 +465,10 @@ class _HeroBanner extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           client.name,
-                          style: const TextStyle(
-                            fontSize: 30,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: narrow ? 22 : 30,
                             fontWeight: FontWeight.w700,
                             fontFamily: AppTypography.display,
                             letterSpacing: -0.7,
@@ -478,9 +483,12 @@ class _HeroBanner extends StatelessWidget {
                             if (client.email != null) client.email!,
                             if (client.phone != null) client.phone!,
                           ].join(' · '),
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.78),
                             fontFamily: AppTypography.body,
+                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -495,6 +503,7 @@ class _HeroBanner extends StatelessWidget {
                   color: Colors.white.withOpacity(0.72),
                   fontFamily: AppTypography.body,
                   height: 1.4,
+                  fontSize: 13,
                 ),
               ),
             ],
@@ -635,6 +644,7 @@ class _RecordRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Column(
@@ -642,6 +652,8 @@ class _RecordRow extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontFamily: AppTypography.body,
@@ -651,6 +663,8 @@ class _RecordRow extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontFamily: AppTypography.body,
@@ -660,7 +674,8 @@ class _RecordRow extends StatelessWidget {
               ],
             ),
           ),
-          trailing,
+          const SizedBox(width: 8),
+          Flexible(child: Align(alignment: Alignment.centerRight, child: trailing)),
         ],
       ),
     );

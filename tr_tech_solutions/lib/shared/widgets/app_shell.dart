@@ -72,7 +72,7 @@ class AppShell extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('TR Tech Solutions'),
+        title: const Text('TR Tech'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),

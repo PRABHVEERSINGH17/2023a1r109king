@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
 final ticketsProvider = FutureProvider<List<TicketModel>>((ref) async {
@@ -22,7 +24,7 @@ class TicketsScreen extends ConsumerWidget {
     final ticketsAsync = ref.watch(ticketsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,52 +51,72 @@ class TicketsScreen extends ConsumerWidget {
                     onAction: () => showLinkedTicketDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Ticket #')),
-                        DataColumn(label: Text('Subject')),
-                        DataColumn(label: Text('Client')),
-                        DataColumn(label: Text('Priority')),
-                        DataColumn(label: Text('Status')),
-                        DataColumn(label: Text('Created')),
-                        DataColumn(label: Text('Actions')),
+
+                Widget statusMenu(TicketModel t) => PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, size: 18),
+                      onSelected: (status) async {
+                        await ref.read(dataServiceProvider)?.updateTicketStatus(t.id, status);
+                        ref.invalidate(ticketsProvider);
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'open', child: Text('Open')),
+                        PopupMenuItem(value: 'in_progress', child: Text('In Progress')),
+                        PopupMenuItem(value: 'resolved', child: Text('Resolved')),
+                        PopupMenuItem(value: 'closed', child: Text('Closed')),
                       ],
-                      rows: tickets.map((t) {
-                        return DataRow(cells: [
-                          DataCell(Text(t.ticketNumber)),
-                          DataCell(Text(t.subject)),
-                          DataCell(Text(t.clientName ?? '-')),
-                          DataCell(StatusBadge(status: t.priority, compact: true)),
-                          DataCell(StatusBadge(status: t.status, compact: true)),
-                          DataCell(Text(Formatters.formatDate(t.createdAt))),
-                          DataCell(Row(children: [
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert, size: 18),
-                              onSelected: (status) async {
-                                await ref.read(dataServiceProvider)?.updateTicketStatus(t.id, status);
-                                ref.invalidate(ticketsProvider);
-                              },
-                              itemBuilder: (_) => const [
-                                PopupMenuItem(value: 'open', child: Text('Open')),
-                                PopupMenuItem(value: 'in_progress', child: Text('In Progress')),
-                                PopupMenuItem(value: 'resolved', child: Text('Resolved')),
-                                PopupMenuItem(value: 'closed', child: Text('Closed')),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              onPressed: () async {
-                                await ref.read(dataServiceProvider)?.deleteTicket(t.id);
-                                ref.invalidate(ticketsProvider);
-                              },
-                            ),
-                          ])),
-                        ]);
-                      }).toList(),
-                    ),
+                    );
+
+                Widget deleteBtn(TicketModel t) => IconButton(
+                      icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                      onPressed: () async {
+                        await ref.read(dataServiceProvider)?.deleteTicket(t.id);
+                        ref.invalidate(ticketsProvider);
+                      },
+                    );
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Ticket #')),
+                      DataColumn(label: Text('Subject')),
+                      DataColumn(label: Text('Client')),
+                      DataColumn(label: Text('Priority')),
+                      DataColumn(label: Text('Status')),
+                      DataColumn(label: Text('Created')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: tickets.map((t) {
+                      return DataRow(cells: [
+                        DataCell(Text(t.ticketNumber)),
+                        DataCell(Text(t.subject)),
+                        DataCell(Text(t.clientName ?? '-')),
+                        DataCell(StatusBadge(status: t.priority, compact: true)),
+                        DataCell(StatusBadge(status: t.status, compact: true)),
+                        DataCell(Text(Formatters.formatDate(t.createdAt))),
+                        DataCell(Row(children: [statusMenu(t), deleteBtn(t)])),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: tickets.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final t = tickets[index];
+                      return MobileRecordTile(
+                        title: t.subject,
+                        subtitle:
+                            '${t.ticketNumber} · ${t.clientName ?? 'No client'} · ${Formatters.formatDate(t.createdAt)}',
+                        badge: Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            StatusBadge(status: t.priority, compact: true),
+                            StatusBadge(status: t.status, compact: true),
+                          ],
+                        ),
+                        actions: [statusMenu(t), deleteBtn(t)],
+                      );
+                    },
                   ),
                 );
               },

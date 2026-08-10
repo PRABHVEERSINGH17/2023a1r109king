@@ -38,9 +38,12 @@ Future<void> showLinkedProjectDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         title: const Text('Add Project'),
-        content: SizedBox(
-          width: 400,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -138,9 +141,12 @@ Future<void> showLinkedInvoiceDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         title: const Text('Create Invoice'),
-        content: SizedBox(
-          width: 400,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -241,9 +247,12 @@ Future<void> showLinkedPaymentDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         title: const Text('Record Payment'),
-        content: SizedBox(
-          width: 400,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -330,9 +339,12 @@ Future<void> showLinkedServiceDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         title: const Text('Add Service'),
-        content: SizedBox(
-          width: 400,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -448,9 +460,12 @@ Future<void> showLinkedTicketDialog(
     context: context,
     builder: (ctx) => StatefulBuilder(
       builder: (ctx, setState) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         title: const Text('Create Ticket'),
-        content: SizedBox(
-          width: 400,
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+          ),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

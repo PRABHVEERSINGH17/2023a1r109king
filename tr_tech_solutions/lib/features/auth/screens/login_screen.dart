@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
@@ -130,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             SafeArea(
               child: Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppBreakpoints.isCompact(context) ? 14 : 20),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: wide ? 980 : 440),
                     child: wide
@@ -144,7 +145,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         : Column(
                             children: [
                               FadeInUp(child: _BrandPanel(compact: true)),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
                               FadeInUp(delay: const Duration(milliseconds: 100), child: _buildLoginCard()),
                             ],
                           ),
@@ -159,13 +160,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildLoginCard() {
+    final compact = MediaQuery.sizeOf(context).width < 400;
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withOpacity(0.35)),
       ),
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(compact ? 18 : 24),
       child: Form(
         key: _formKey,
         child: Column(
@@ -312,8 +314,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: const Text('Exit Demo — Go Online'),
               ),
               const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Text(
                     "Don't have an account?",

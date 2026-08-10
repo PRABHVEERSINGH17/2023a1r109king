@@ -40,12 +40,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           );
 
       if (mounted) {
-        // Local or cloud session — enter the app.
         context.go('/dashboard');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account ready — you are signed in'),
-          ),
+          const SnackBar(content: Text('Account ready — you are signed in')),
         );
       }
     } catch (e) {
@@ -61,6 +58,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 400;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -70,111 +69,121 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             colors: AppColors.heroGradient,
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 440),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                padding: const EdgeInsets.all(28),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        'Create account',
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Outfit',
-                          letterSpacing: -0.6,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Join TR Technology Solutions and start managing your business.',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Full Name',
-                          prefixIcon: Icon(Icons.person_outline_rounded),
-                        ),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Name is required' : null,
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          prefixIcon: Icon(Icons.mail_outline_rounded),
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Email is required';
-                          if (!v.contains('@')) return 'Enter a valid email';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline_rounded),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                            onPressed: () =>
-                                setState(() => _obscurePassword = !_obscurePassword),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(compact ? 14 : 20),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  padding: EdgeInsets.all(compact ? 18 : 24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text(
+                          'Create account',
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Outfit',
+                            letterSpacing: -0.6,
+                            color: AppColors.textPrimary,
                           ),
                         ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Password is required';
-                          if (v.length < 6) return 'Password must be at least 6 characters';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 22),
-                      SizedBox(
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _signUp,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Text('Create Account'),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Join TR Technology Solutions and start managing your business.',
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
-                      ),
-                      const SizedBox(height: 18),
-                      const SocialAuthButtons(),
-                      const SizedBox(height: 14),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('Already have an account?',
-                              style: TextStyle(color: AppColors.textSecondary)),
-                          TextButton(
-                            onPressed: () => context.go('/login'),
-                            child: const Text('Sign In'),
+                        const SizedBox(height: 24),
+                        TextFormField(
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Full Name',
+                            prefixIcon: Icon(Icons.person_outline_rounded),
                           ),
-                        ],
-                      ),
-                    ],
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Name is required' : null,
+                        ),
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.mail_outline_rounded),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Email is required';
+                            if (!v.contains('@')) return 'Enter a valid email';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined),
+                              onPressed: () =>
+                                  setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Password is required';
+                            if (v.length < 6) {
+                              return 'Password must be at least 6 characters';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 22),
+                        SizedBox(
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _signUp,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Create Account'),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        const SocialAuthButtons(),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            const Text(
+                              'Already have an account?',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                            TextButton(
+                              onPressed: () => context.go('/login'),
+                              child: const Text('Sign In'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

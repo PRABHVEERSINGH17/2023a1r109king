@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 
 final paymentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final service = ref.watch(dataServiceProvider);
@@ -20,7 +22,7 @@ class PaymentsScreen extends ConsumerWidget {
     final paymentsAsync = ref.watch(paymentsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -47,31 +49,46 @@ class PaymentsScreen extends ConsumerWidget {
                     onAction: () => showLinkedPaymentDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Amount')),
-                        DataColumn(label: Text('Method')),
-                        DataColumn(label: Text('Client')),
-                        DataColumn(label: Text('Reference')),
-                        DataColumn(label: Text('Date')),
-                      ],
-                      rows: payments.map((p) {
-                        final clientName = p['clients'] != null
-                            ? (p['clients'] as Map)['name'] as String?
-                            : null;
-                        return DataRow(cells: [
-                          DataCell(Text(Formatters.formatCurrency((p['amount'] as num).toDouble()))),
-                          DataCell(Text(p['method'] as String? ?? '-')),
-                          DataCell(Text(clientName ?? '-')),
-                          DataCell(Text(p['reference'] as String? ?? '-')),
-                          DataCell(Text(Formatters.formatDate(
-                              p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null))),
-                        ]);
-                      }).toList(),
-                    ),
+
+                String? clientNameOf(Map<String, dynamic> p) => p['clients'] != null
+                    ? (p['clients'] as Map)['name'] as String?
+                    : null;
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Amount')),
+                      DataColumn(label: Text('Method')),
+                      DataColumn(label: Text('Client')),
+                      DataColumn(label: Text('Reference')),
+                      DataColumn(label: Text('Date')),
+                    ],
+                    rows: payments.map((p) {
+                      return DataRow(cells: [
+                        DataCell(Text(Formatters.formatCurrency((p['amount'] as num).toDouble()))),
+                        DataCell(Text(p['method'] as String? ?? '-')),
+                        DataCell(Text(clientNameOf(p) ?? '-')),
+                        DataCell(Text(p['reference'] as String? ?? '-')),
+                        DataCell(Text(Formatters.formatDate(
+                            p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null))),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: payments.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final p = payments[index];
+                      final amount = Formatters.formatCurrency((p['amount'] as num).toDouble());
+                      final method = p['method'] as String? ?? '-';
+                      final refText = p['reference'] as String? ?? '-';
+                      final date = Formatters.formatDate(
+                          p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null);
+                      return MobileRecordTile(
+                        title: amount,
+                        subtitle: '${clientNameOf(p) ?? 'No client'} · $method · $refText · $date',
+                      );
+                    },
                   ),
                 );
               },

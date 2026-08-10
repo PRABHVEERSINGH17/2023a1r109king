@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
@@ -73,7 +74,7 @@ class SettingsScreen extends ConsumerWidget {
     final isLocal = ref.watch(localAuthProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: ListView(
         children: [
           const PageHeader(

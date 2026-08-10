@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
@@ -118,7 +119,7 @@ class ReportsScreen extends ConsumerWidget {
     final isWide = MediaQuery.of(context).size.width >= 900;
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: reportAsync.when(
         loading: () => const LoadingWidget(),
         error: (e, _) => AppErrorWidget(
@@ -351,6 +352,28 @@ class _MonthlyBreakdownTable extends StatelessWidget {
               const Text(
                 'No monthly sales recorded yet.',
                 style: TextStyle(color: AppColors.textMuted),
+              )
+            else if (AppBreakpoints.isPhone(context))
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: rows.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final m = rows[index];
+                  final share = report.yearToDate <= 0
+                      ? 0.0
+                      : (m.amount / report.yearToDate) * 100;
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(m.label),
+                    subtitle: Text('${m.paymentCount} payments · ${share.toStringAsFixed(1)}% of YTD'),
+                    trailing: Text(
+                      Formatters.formatCurrency(m.amount),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  );
+                },
               )
             else
               SingleChildScrollView(

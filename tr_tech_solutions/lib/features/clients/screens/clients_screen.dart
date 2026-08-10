@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
@@ -56,7 +57,7 @@ class ClientsScreen extends ConsumerWidget {
     final wide = MediaQuery.of(context).size.width >= 980;
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -66,15 +67,16 @@ class ClientsScreen extends ConsumerWidget {
               subtitle: isDemo
                   ? 'Add a client and related lead, invoice, payment & more appear automatically.'
                   : 'Your client hub — related records are created when you add someone new.',
-              action: Row(
-                mainAxisSize: MainAxisSize.min,
+              action: Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   IconButton.filledTonal(
                     tooltip: 'Refresh',
                     onPressed: () => ref.invalidate(clientsProvider),
                     icon: const Icon(Icons.refresh_rounded),
                   ),
-                  const SizedBox(width: 10),
                   ElevatedButton.icon(
                     onPressed: () => _showClientDialog(context, ref),
                     icon: const Icon(Icons.add_rounded, size: 18),
@@ -208,30 +210,36 @@ class ClientsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           title: Text(client == null ? 'Add Client' : 'Edit Client'),
-          content: SizedBox(
-            width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name *')),
-                const SizedBox(height: 12),
-                TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
-                const SizedBox(height: 12),
-                TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone')),
-                const SizedBox(height: 12),
-                TextField(controller: companyController, decoration: const InputDecoration(labelText: 'Company')),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: status,
-                  decoration: const InputDecoration(labelText: 'Status'),
-                  items: const [
-                    DropdownMenuItem(value: 'active', child: Text('Active')),
-                    DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
-                  ],
-                  onChanged: (v) => setState(() => status = v ?? 'active'),
-                ),
-              ],
+          content: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: (MediaQuery.sizeOf(ctx).width - 48).clamp(260.0, 420.0),
+              maxHeight: MediaQuery.sizeOf(ctx).height * 0.65,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name *')),
+                  const SizedBox(height: 12),
+                  TextField(controller: emailController, decoration: const InputDecoration(labelText: 'Email')),
+                  const SizedBox(height: 12),
+                  TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Phone')),
+                  const SizedBox(height: 12),
+                  TextField(controller: companyController, decoration: const InputDecoration(labelText: 'Company')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: status,
+                    decoration: const InputDecoration(labelText: 'Status'),
+                    items: const [
+                      DropdownMenuItem(value: 'active', child: Text('Active')),
+                      DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                    ],
+                    onChanged: (v) => setState(() => status = v ?? 'active'),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -264,20 +272,27 @@ class ClientsScreen extends ConsumerWidget {
                 showDialog(
                   context: ctx,
                   barrierDismissible: false,
-                  builder: (_) => const Center(
+                  builder: (_) => Center(
                     child: Card(
                       child: Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(strokeWidth: 2.5),
                             ),
-                            SizedBox(width: 14),
-                            Text('Creating client & related records…'),
+                            const SizedBox(width: 14),
+                            Flexible(
+                              child: Text(
+                                client == null
+                                    ? 'Creating client…'
+                                    : 'Saving client…',
+                                softWrap: true,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -455,7 +470,7 @@ class _ClientCard extends StatelessWidget {
                   ],
                 ),
               ),
-              StatusBadge(status: client.status, compact: true),
+              Flexible(child: StatusBadge(status: client.status, compact: true)),
             ],
           ),
           const SizedBox(height: 14),

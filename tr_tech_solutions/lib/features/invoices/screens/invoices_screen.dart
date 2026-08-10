@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
 final invoicesProvider = FutureProvider<List<InvoiceModel>>((ref) async {
@@ -22,7 +24,7 @@ class InvoicesScreen extends ConsumerWidget {
     final invoicesAsync = ref.watch(invoicesProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -49,35 +51,49 @@ class InvoicesScreen extends ConsumerWidget {
                     onAction: () => showLinkedInvoiceDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Invoice #')),
-                        DataColumn(label: Text('Client')),
-                        DataColumn(label: Text('Amount')),
-                        DataColumn(label: Text('Status')),
-                        DataColumn(label: Text('Due Date')),
-                        DataColumn(label: Text('Actions')),
-                      ],
-                      rows: invoices.map((inv) {
-                        return DataRow(cells: [
-                          DataCell(Text(inv.invoiceNumber)),
-                          DataCell(Text(inv.clientName ?? '-')),
-                          DataCell(Text(Formatters.formatCurrency(inv.total))),
-                          DataCell(StatusBadge(status: inv.status, compact: true)),
-                          DataCell(Text(Formatters.formatDate(inv.dueDate))),
-                          DataCell(IconButton(
-                            icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                            onPressed: () async {
-                              await ref.read(dataServiceProvider)?.deleteInvoice(inv.id);
-                              ref.invalidate(invoicesProvider);
-                            },
-                          )),
-                        ]);
-                      }).toList(),
-                    ),
+
+                Widget deleteBtn(InvoiceModel inv) => IconButton(
+                      icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                      onPressed: () async {
+                        await ref.read(dataServiceProvider)?.deleteInvoice(inv.id);
+                        ref.invalidate(invoicesProvider);
+                      },
+                    );
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Invoice #')),
+                      DataColumn(label: Text('Client')),
+                      DataColumn(label: Text('Amount')),
+                      DataColumn(label: Text('Status')),
+                      DataColumn(label: Text('Due Date')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: invoices.map((inv) {
+                      return DataRow(cells: [
+                        DataCell(Text(inv.invoiceNumber)),
+                        DataCell(Text(inv.clientName ?? '-')),
+                        DataCell(Text(Formatters.formatCurrency(inv.total))),
+                        DataCell(StatusBadge(status: inv.status, compact: true)),
+                        DataCell(Text(Formatters.formatDate(inv.dueDate))),
+                        DataCell(deleteBtn(inv)),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: invoices.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final inv = invoices[index];
+                      return MobileRecordTile(
+                        title: inv.invoiceNumber,
+                        subtitle:
+                            '${inv.clientName ?? 'No client'} · ${Formatters.formatCurrency(inv.total)} · Due ${Formatters.formatDate(inv.dueDate)}',
+                        badge: StatusBadge(status: inv.status, compact: true),
+                        actions: [deleteBtn(inv)],
+                      );
+                    },
                   ),
                 );
               },

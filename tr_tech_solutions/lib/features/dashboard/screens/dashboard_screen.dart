@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
@@ -131,7 +132,7 @@ class DashboardScreen extends ConsumerWidget {
         onRefresh: () async => _refresh(ref),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
+          padding: AppBreakpoints.pagePadding(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -348,6 +349,11 @@ class _ModuleGrid extends StatelessWidget {
             : width >= 500
                 ? 3
                 : 2;
+    final aspect = width < 400
+        ? 1.85
+        : width < 600
+            ? 2.05
+            : 2.45;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +376,7 @@ class _ModuleGrid extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 2.45,
+            childAspectRatio: aspect,
           ),
           itemBuilder: (context, index) {
             final m = _modules[index];
@@ -604,7 +610,7 @@ class _ServicesChart extends ConsumerWidget {
           _SectionHeader(title: 'Services Overview', actionLabel: 'Manage', onAction: onOpen),
           const SizedBox(height: 12),
           SizedBox(
-            height: 200,
+            height: 240,
             child: distAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, __) => Center(
@@ -619,13 +625,13 @@ class _ServicesChart extends ConsumerWidget {
                     ),
                   );
                 }
-                    final colors = [
-                      AppColors.chart1,
-                      AppColors.chart2,
-                      AppColors.chart3,
-                      AppColors.chart4,
-                      AppColors.chart5,
-                    ];
+                final colors = [
+                  AppColors.chart1,
+                  AppColors.chart2,
+                  AppColors.chart3,
+                  AppColors.chart4,
+                  AppColors.chart5,
+                ];
                 final entries = dist.entries.toList();
                 return Column(
                   children: [
@@ -658,15 +664,20 @@ class _ServicesChart extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: List.generate(entries.length, (i) {
-                        return Text(
-                          '${entries[i].key}: ${entries[i].value}',
-                          style: TextStyle(fontSize: 11, color: colors[i % colors.length]),
-                        );
-                      }),
+                    SizedBox(
+                      height: 42,
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: List.generate(entries.length, (i) {
+                            return Text(
+                              '${entries[i].key}: ${entries[i].value}',
+                              style: TextStyle(fontSize: 11, color: colors[i % colors.length]),
+                            );
+                          }),
+                        ),
+                      ),
                     ),
                   ],
                 );
@@ -716,9 +727,11 @@ class _LeadsPipeline extends ConsumerWidget {
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 100,
+                          width: MediaQuery.sizeOf(context).width < 400 ? 72 : 100,
                           child: Text(
                             labels[i],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                           ),
                         ),
@@ -856,17 +869,24 @@ class _RecentInvoices extends ConsumerWidget {
                       inv.clientName ?? 'No client',
                       style: const TextStyle(fontSize: 12),
                     ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          Formatters.formatCurrency(inv.total),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                        const SizedBox(width: 8),
-                        StatusBadge(status: inv.status, compact: true),
-                        const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
-                      ],
+                    trailing: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 160),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              Formatters.formatCurrency(inv.total),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          StatusBadge(status: inv.status, compact: true),
+                          const Icon(Icons.chevron_right, size: 16, color: AppColors.textMuted),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
