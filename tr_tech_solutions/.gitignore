@@ -1,5 +1,5 @@
-# Environment variables with secrets
-assets/.env
+# Local overrides with real secrets (optional)
+assets/.env.local
 
 *.class
 *.log

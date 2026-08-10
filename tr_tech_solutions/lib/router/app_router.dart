@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
+import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/auth/screens/login_screen.dart';
 import 'package:tr_tech_solutions/features/auth/screens/signup_screen.dart';
@@ -19,18 +21,17 @@ import 'package:tr_tech_solutions/shared/widgets/app_shell.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final isDemo = ref.watch(demoModeProvider);
 
   return GoRouter(
     initialLocation: '/login',
+    refreshListenable: _RouterRefresh(ref),
     redirect: (context, state) {
-      final isLoggedIn = SupabaseConfig.isConfigured &&
-          authState.valueOrNull?.session != null;
+      final supabaseLoggedIn =
+          SupabaseConfig.isConfigured && authState.valueOrNull?.session != null;
+      final isLoggedIn = isDemo || supabaseLoggedIn;
       final isAuthRoute =
           state.matchedLocation == '/login' || state.matchedLocation == '/signup';
-
-      if (!SupabaseConfig.isConfigured) {
-        return state.matchedLocation == '/login' ? null : '/login';
-      }
 
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/dashboard';
@@ -58,3 +59,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+class _RouterRefresh extends ChangeNotifier {
+  _RouterRefresh(Ref ref) {
+    ref.listen(demoModeProvider, (_, __) => notifyListeners());
+    ref.listen(authStateProvider, (_, __) => notifyListeners());
+  }
+}
