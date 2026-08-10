@@ -9,15 +9,7 @@ import 'package:tr_tech_solutions/router/app_router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  try {
-    await dotenv.load(fileName: 'assets/.env');
-  } catch (_) {
-    try {
-      await dotenv.load(fileName: 'assets/.env.example');
-    } catch (_) {
-      // Demo mode works without env files.
-    }
-  }
+  await dotenv.load(fileName: 'assets/supabase.env');
 
   if (SupabaseConfig.isConfigured) {
     await Supabase.initialize(
