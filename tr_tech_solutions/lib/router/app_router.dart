@@ -6,6 +6,7 @@ import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/auth/screens/login_screen.dart';
 import 'package:tr_tech_solutions/features/auth/screens/signup_screen.dart';
+import 'package:tr_tech_solutions/features/clients/screens/client_detail_screen.dart';
 import 'package:tr_tech_solutions/features/clients/screens/clients_screen.dart';
 import 'package:tr_tech_solutions/features/dashboard/screens/dashboard_screen.dart';
 import 'package:tr_tech_solutions/features/expenses/screens/expenses_screen.dart';
@@ -50,6 +51,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
           GoRoute(path: '/clients', builder: (_, __) => const ClientsScreen()),
+          GoRoute(
+            path: '/clients/:id',
+            builder: (_, state) => ClientDetailScreen(clientId: state.pathParameters['id']!),
+          ),
           GoRoute(path: '/leads', builder: (_, __) => const LeadsScreen()),
           GoRoute(path: '/services', builder: (_, __) => const ServicesScreen()),
           GoRoute(path: '/projects', builder: (_, __) => const ProjectsScreen()),

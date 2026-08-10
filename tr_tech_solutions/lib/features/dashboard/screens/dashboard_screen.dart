@@ -8,7 +8,7 @@ import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
-import 'package:tr_tech_solutions/features/clients/screens/clients_screen.dart';
+import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/shared/models/dashboard_stats.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
 import 'package:tr_tech_solutions/shared/models/project.dart';

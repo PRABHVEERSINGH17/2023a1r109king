@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
+import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
-final clientsProvider = FutureProvider<List<ClientModel>>((ref) async {
-  final service = ref.watch(dataServiceProvider);
-  if (service == null) return [];
-  return service.getClients();
-});
+export 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 
 class ClientsScreen extends ConsumerWidget {
   const ClientsScreen({super.key});
@@ -118,14 +116,24 @@ class ClientsScreen extends ConsumerWidget {
                                 DataColumn(label: Text('Actions')),
                               ],
                               rows: clients.map((client) {
-                                return DataRow(cells: [
-                                  DataCell(Text(client.name)),
+                                return DataRow(
+                                  onSelectChanged: (_) => context.go('/clients/${client.id}'),
+                                  cells: [
+                                  DataCell(
+                                    Text(client.name),
+                                    onTap: () => context.go('/clients/${client.id}'),
+                                  ),
                                   DataCell(Text(client.email ?? '-')),
                                   DataCell(Text(client.phone ?? '-')),
                                   DataCell(Text(client.company ?? '-')),
                                   DataCell(StatusBadge(status: client.status, compact: true)),
                                   DataCell(Row(
                                     children: [
+                                      IconButton(
+                                        tooltip: 'Open client hub',
+                                        icon: const Icon(Icons.open_in_new, size: 18),
+                                        onPressed: () => context.go('/clients/${client.id}'),
+                                      ),
                                       IconButton(
                                         icon: const Icon(Icons.edit, size: 18),
                                         onPressed: () =>
@@ -137,7 +145,8 @@ class ClientsScreen extends ConsumerWidget {
                                       ),
                                     ],
                                   )),
-                                ]);
+                                ],
+                                );
                               }).toList(),
                             ),
                           ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
+import 'package:tr_tech_solutions/shared/widgets/client_picker.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
@@ -91,6 +92,7 @@ class InvoicesScreen extends ConsumerWidget {
     final numberController = TextEditingController(text: 'INV-${DateTime.now().millisecondsSinceEpoch % 10000}');
     final amountController = TextEditingController();
     var status = 'pending';
+    String? clientId;
     DateTime? dueDate = DateTime.now().add(const Duration(days: 30));
 
     await showDialog(
@@ -100,52 +102,65 @@ class InvoicesScreen extends ConsumerWidget {
           title: const Text('Create Invoice'),
           content: SizedBox(
             width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: numberController, decoration: const InputDecoration(labelText: 'Invoice Number *')),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Amount *', prefixText: '₹ '),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: status,
-                  decoration: const InputDecoration(labelText: 'Status'),
-                  items: const [
-                    DropdownMenuItem(value: 'draft', child: Text('Draft')),
-                    DropdownMenuItem(value: 'pending', child: Text('Pending')),
-                    DropdownMenuItem(value: 'paid', child: Text('Paid')),
-                    DropdownMenuItem(value: 'overdue', child: Text('Overdue')),
-                  ],
-                  onChanged: (v) => setState(() => status = v ?? 'pending'),
-                ),
-                const SizedBox(height: 12),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text('Due: ${Formatters.formatDate(dueDate)}'),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: ctx,
-                      initialDate: dueDate ?? DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
-                    if (date != null) setState(() => dueDate = date);
-                  },
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClientPickerField(
+                    value: clientId,
+                    onChanged: (v) => setState(() => clientId = v),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(controller: numberController, decoration: const InputDecoration(labelText: 'Invoice Number *')),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Amount *', prefixText: '₹ '),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: status,
+                    decoration: const InputDecoration(labelText: 'Status'),
+                    items: const [
+                      DropdownMenuItem(value: 'draft', child: Text('Draft')),
+                      DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                      DropdownMenuItem(value: 'paid', child: Text('Paid')),
+                      DropdownMenuItem(value: 'overdue', child: Text('Overdue')),
+                    ],
+                    onChanged: (v) => setState(() => status = v ?? 'pending'),
+                  ),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Due: ${Formatters.formatDate(dueDate)}'),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: ctx,
+                        initialDate: dueDate ?? DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (date != null) setState(() => dueDate = date);
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
             ElevatedButton(
               onPressed: () async {
-                if (numberController.text.isEmpty || amountController.text.isEmpty) return;
+                if (numberController.text.isEmpty || amountController.text.isEmpty || clientId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Select a client and fill invoice details')),
+                  );
+                  return;
+                }
                 await ref.read(dataServiceProvider)?.createInvoice({
+                  'client_id': clientId,
                   'invoice_number': numberController.text.trim(),
                   'amount': double.tryParse(amountController.text) ?? 0,
                   'status': status,

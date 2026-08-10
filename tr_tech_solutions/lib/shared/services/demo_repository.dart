@@ -474,6 +474,7 @@ class DemoRepository implements AppRepository {
       for (var i = 0; i < 12; i++)
         {
           'id': 'pay-m$i',
+          'client_id': ['c1', 'c2', 'c3', 'c5'][i % 4],
           'amount': 45000.0 + (i * 8500) + ((i % 3) * 12000),
           'method': i.isEven ? 'upi' : 'bank_transfer',
           'reference': 'TXN-${1000 + i}',
@@ -485,6 +486,7 @@ class DemoRepository implements AppRepository {
         },
       {
         'id': 'pay-extra1',
+        'client_id': 'c1',
         'amount': 53100.0,
         'method': 'bank_transfer',
         'reference': 'NEFT-882341',
@@ -494,6 +496,7 @@ class DemoRepository implements AppRepository {
       },
       {
         'id': 'pay-extra2',
+        'client_id': 'c3',
         'amount': 25000.0,
         'method': 'upi',
         'reference': 'UPI-445566',
@@ -528,6 +531,14 @@ class DemoRepository implements AppRepository {
     ));
   }
 
+  String? _clientNameFor(String? clientId) {
+    if (clientId == null || clientId.isEmpty) return null;
+    for (final c in _clients) {
+      if (c.id == clientId) return c.name;
+    }
+    return null;
+  }
+
   @override
   Future<List<ClientModel>> getClients() => _delay(List.from(_clients));
 
@@ -540,6 +551,8 @@ class DemoRepository implements AppRepository {
       email: data['email'] as String?,
       phone: data['phone'] as String?,
       company: data['company'] as String?,
+      address: data['address'] as String?,
+      notes: data['notes'] as String?,
       status: data['status'] as String? ?? 'active',
       createdAt: DateTime.now(),
     );
@@ -556,15 +569,198 @@ class DemoRepository implements AppRepository {
       email: data['email'] as String?,
       phone: data['phone'] as String?,
       company: data['company'] as String?,
+      address: data['address'] as String?,
+      notes: data['notes'] as String?,
       status: data['status'] as String?,
     );
     _clients[index] = updated;
+
+    // Keep related display names in sync when client is renamed.
+    final name = updated.name;
+    for (var i = 0; i < _services.length; i++) {
+      if (_services[i].clientId == id) {
+        final s = _services[i];
+        _services[i] = ServiceModel(
+          id: s.id,
+          userId: s.userId,
+          clientId: s.clientId,
+          name: s.name,
+          type: s.type,
+          provider: s.provider,
+          expiryDate: s.expiryDate,
+          renewalCost: s.renewalCost,
+          status: s.status,
+          notes: s.notes,
+          clientName: name,
+        );
+      }
+    }
+    for (var i = 0; i < _invoices.length; i++) {
+      if (_invoices[i].clientId == id) {
+        final inv = _invoices[i];
+        _invoices[i] = InvoiceModel(
+          id: inv.id,
+          userId: inv.userId,
+          clientId: inv.clientId,
+          invoiceNumber: inv.invoiceNumber,
+          amount: inv.amount,
+          tax: inv.tax,
+          total: inv.total,
+          status: inv.status,
+          dueDate: inv.dueDate,
+          issuedDate: inv.issuedDate,
+          notes: inv.notes,
+          clientName: name,
+        );
+      }
+    }
+    for (var i = 0; i < _projects.length; i++) {
+      if (_projects[i].clientId == id) {
+        final p = _projects[i];
+        _projects[i] = ProjectModel(
+          id: p.id,
+          userId: p.userId,
+          clientId: p.clientId,
+          title: p.title,
+          description: p.description,
+          status: p.status,
+          dueDate: p.dueDate,
+          budget: p.budget,
+          clientName: name,
+        );
+      }
+    }
+    for (var i = 0; i < _tickets.length; i++) {
+      if (_tickets[i].clientId == id) {
+        final t = _tickets[i];
+        _tickets[i] = TicketModel(
+          id: t.id,
+          userId: t.userId,
+          clientId: t.clientId,
+          ticketNumber: t.ticketNumber,
+          subject: t.subject,
+          description: t.description,
+          status: t.status,
+          priority: t.priority,
+          createdAt: t.createdAt,
+          clientName: name,
+        );
+      }
+    }
+    for (var i = 0; i < _payments.length; i++) {
+      if (_payments[i]['client_id'] == id) {
+        _payments[i] = {
+          ..._payments[i],
+          'clients': {'name': name},
+        };
+      }
+    }
+
     return _delay(updated);
   }
 
   @override
   Future<void> deleteClient(String id) async {
     _clients.removeWhere((c) => c.id == id);
+    // Match Supabase ON DELETE SET NULL behavior.
+    for (var i = 0; i < _services.length; i++) {
+      if (_services[i].clientId == id) {
+        final s = _services[i];
+        _services[i] = ServiceModel(
+          id: s.id,
+          userId: s.userId,
+          clientId: null,
+          name: s.name,
+          type: s.type,
+          provider: s.provider,
+          expiryDate: s.expiryDate,
+          renewalCost: s.renewalCost,
+          status: s.status,
+          notes: s.notes,
+          clientName: null,
+        );
+      }
+    }
+    for (var i = 0; i < _invoices.length; i++) {
+      if (_invoices[i].clientId == id) {
+        final inv = _invoices[i];
+        _invoices[i] = InvoiceModel(
+          id: inv.id,
+          userId: inv.userId,
+          clientId: null,
+          invoiceNumber: inv.invoiceNumber,
+          amount: inv.amount,
+          tax: inv.tax,
+          total: inv.total,
+          status: inv.status,
+          dueDate: inv.dueDate,
+          issuedDate: inv.issuedDate,
+          notes: inv.notes,
+          clientName: null,
+        );
+      }
+    }
+    for (var i = 0; i < _projects.length; i++) {
+      if (_projects[i].clientId == id) {
+        final p = _projects[i];
+        _projects[i] = ProjectModel(
+          id: p.id,
+          userId: p.userId,
+          clientId: null,
+          title: p.title,
+          description: p.description,
+          status: p.status,
+          dueDate: p.dueDate,
+          budget: p.budget,
+          clientName: null,
+        );
+      }
+    }
+    for (var i = 0; i < _tickets.length; i++) {
+      if (_tickets[i].clientId == id) {
+        final t = _tickets[i];
+        _tickets[i] = TicketModel(
+          id: t.id,
+          userId: t.userId,
+          clientId: null,
+          ticketNumber: t.ticketNumber,
+          subject: t.subject,
+          description: t.description,
+          status: t.status,
+          priority: t.priority,
+          createdAt: t.createdAt,
+          clientName: null,
+        );
+      }
+    }
+    for (var i = 0; i < _leads.length; i++) {
+      if (_leads[i].clientId == id) {
+        final old = _leads[i];
+        _leads[i] = LeadModel(
+          id: old.id,
+          userId: old.userId,
+          clientId: null,
+          name: old.name,
+          email: old.email,
+          phone: old.phone,
+          company: old.company,
+          stage: old.stage,
+          value: old.value,
+          source: old.source,
+          notes: old.notes,
+          createdAt: old.createdAt,
+        );
+      }
+    }
+    for (var i = 0; i < _payments.length; i++) {
+      if (_payments[i]['client_id'] == id) {
+        _payments[i] = {
+          ..._payments[i],
+          'client_id': null,
+          'clients': null,
+        };
+      }
+    }
     await _delay(null);
   }
 
@@ -573,10 +769,11 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ServiceModel> createService(Map<String, dynamic> data) async {
+    final clientId = data['client_id'] as String?;
     final service = ServiceModel(
       id: _uuid.v4(),
       userId: _userId,
-      clientId: data['client_id'] as String?,
+      clientId: clientId,
       name: data['name'] as String,
       type: data['type'] as String? ?? 'domain',
       provider: data['provider'] as String?,
@@ -585,6 +782,7 @@ class DemoRepository implements AppRepository {
           : null,
       renewalCost: (data['renewal_cost'] as num?)?.toDouble() ?? 0,
       status: data['status'] as String? ?? 'active',
+      clientName: _clientNameFor(clientId),
     );
     _services.insert(0, service);
     return _delay(service);
@@ -603,10 +801,11 @@ class DemoRepository implements AppRepository {
   Future<InvoiceModel> createInvoice(Map<String, dynamic> data) async {
     final amount = (data['amount'] as num).toDouble();
     final tax = (data['tax'] as num?)?.toDouble() ?? 0;
+    final clientId = data['client_id'] as String?;
     final invoice = InvoiceModel(
       id: _uuid.v4(),
       userId: _userId,
-      clientId: data['client_id'] as String?,
+      clientId: clientId,
       invoiceNumber: data['invoice_number'] as String,
       amount: amount,
       tax: tax,
@@ -614,6 +813,7 @@ class DemoRepository implements AppRepository {
       status: data['status'] as String? ?? 'pending',
       dueDate: data['due_date'] != null ? DateTime.parse(data['due_date'] as String) : null,
       issuedDate: DateTime.now(),
+      clientName: _clientNameFor(clientId),
     );
     _invoices.insert(0, invoice);
     return _delay(invoice);
@@ -633,8 +833,10 @@ class DemoRepository implements AppRepository {
     final lead = LeadModel(
       id: _uuid.v4(),
       userId: _userId,
+      clientId: data['client_id'] as String?,
       name: data['name'] as String,
       email: data['email'] as String?,
+      phone: data['phone'] as String?,
       company: data['company'] as String?,
       stage: data['stage'] as String? ?? 'new',
       value: (data['value'] as num?)?.toDouble() ?? 0,
@@ -678,15 +880,17 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<ProjectModel> createProject(Map<String, dynamic> data) async {
+    final clientId = data['client_id'] as String?;
     final project = ProjectModel(
       id: _uuid.v4(),
       userId: _userId,
-      clientId: data['client_id'] as String?,
+      clientId: clientId,
       title: data['title'] as String,
       description: data['description'] as String?,
       status: data['status'] as String? ?? 'in_progress',
       dueDate: data['due_date'] != null ? DateTime.parse(data['due_date'] as String) : null,
       budget: (data['budget'] as num?)?.toDouble() ?? 0,
+      clientName: _clientNameFor(clientId),
     );
     _projects.insert(0, project);
     return _delay(project);
@@ -703,16 +907,18 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<TicketModel> createTicket(Map<String, dynamic> data) async {
+    final clientId = data['client_id'] as String?;
     final ticket = TicketModel(
       id: _uuid.v4(),
       userId: _userId,
-      clientId: data['client_id'] as String?,
+      clientId: clientId,
       ticketNumber: data['ticket_number'] as String,
       subject: data['subject'] as String,
       description: data['description'] as String?,
       status: data['status'] as String? ?? 'open',
       priority: data['priority'] as String? ?? 'medium',
       createdAt: DateTime.now(),
+      clientName: _clientNameFor(clientId),
     );
     _tickets.insert(0, ticket);
     return _delay(ticket);
@@ -765,14 +971,27 @@ class DemoRepository implements AppRepository {
 
   @override
   Future<void> createPayment(Map<String, dynamic> data) async {
+    final clientId = data['client_id'] as String?;
+    final invoiceId = data['invoice_id'] as String?;
+    String? invoiceNumber;
+    if (invoiceId != null) {
+      for (final inv in _invoices) {
+        if (inv.id == invoiceId) {
+          invoiceNumber = inv.invoiceNumber;
+          break;
+        }
+      }
+    }
     _payments.insert(0, {
       'id': _uuid.v4(),
+      'client_id': clientId,
+      'invoice_id': invoiceId,
       'amount': data['amount'],
       'method': data['method'],
       'reference': data['reference'],
       'paid_at': DateTime.now().toIso8601String(),
-      'clients': null,
-      'invoices': null,
+      'clients': clientId != null ? {'name': _clientNameFor(clientId)} : null,
+      'invoices': invoiceNumber != null ? {'invoice_number': invoiceNumber} : null,
     });
     await _delay(null);
   }

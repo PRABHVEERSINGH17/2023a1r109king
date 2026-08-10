@@ -38,4 +38,40 @@ void main() {
     final afterDelete = await repo.getClients();
     expect(afterDelete.length, before.length);
   });
+
+  test('creating project/payment/invoice links to client', () async {
+    final repo = DemoRepository();
+    final client = await repo.createClient({
+      'name': 'Linked Client',
+      'status': 'active',
+    });
+
+    final project = await repo.createProject({
+      'client_id': client.id,
+      'title': 'Website Redesign',
+      'budget': 50000,
+      'status': 'in_progress',
+    });
+    expect(project.clientId, client.id);
+    expect(project.clientName, 'Linked Client');
+
+    final invoice = await repo.createInvoice({
+      'client_id': client.id,
+      'invoice_number': 'INV-TEST-1',
+      'amount': 10000,
+      'status': 'pending',
+    });
+    expect(invoice.clientId, client.id);
+    expect(invoice.clientName, 'Linked Client');
+
+    await repo.createPayment({
+      'client_id': client.id,
+      'amount': 10000,
+      'method': 'upi',
+      'reference': 'UPI-1',
+    });
+    final payments = await repo.getPayments();
+    final linked = payments.firstWhere((p) => p['client_id'] == client.id);
+    expect(linked['clients']['name'], 'Linked Client');
+  });
 }
