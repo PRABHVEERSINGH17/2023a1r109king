@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/features/clients/screens/clients_screen.dart';
@@ -18,7 +19,19 @@ import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
   final service = ref.watch(dataServiceProvider);
   if (service == null) return const DashboardStats();
-  return service.getDashboardStats();
+  try {
+    return await service.getDashboardStats();
+  } catch (_) {
+    // Live backend failed — fall back to demo seed so the dashboard still works.
+    if (!ref.read(demoModeProvider)) {
+      Future.microtask(() {
+        if (!ref.read(demoModeProvider)) {
+          ref.read(demoModeProvider.notifier).state = true;
+        }
+      });
+    }
+    return ref.read(demoRepositoryProvider).getDashboardStats();
+  }
 });
 
 final recentInvoicesProvider = FutureProvider<List<InvoiceModel>>((ref) async {

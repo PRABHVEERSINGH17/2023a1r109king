@@ -19,14 +19,19 @@ import 'package:tr_tech_solutions/features/settings/screens/settings_screen.dart
 import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/widgets/app_shell.dart';
 
+/// Stable GoRouter instance. Auth/demo changes refresh redirects without
+/// recreating the router (recreating was resetting navigation and breaking
+/// the dashboard).
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final isDemo = ref.watch(demoModeProvider);
+  final refresh = _RouterRefresh(ref);
+  ref.onDispose(refresh.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     initialLocation: '/login',
-    refreshListenable: _RouterRefresh(ref),
+    refreshListenable: refresh,
     redirect: (context, state) {
+      final isDemo = ref.read(demoModeProvider);
+      final authState = ref.read(authStateProvider);
       final supabaseLoggedIn =
           SupabaseConfig.isConfigured && authState.valueOrNull?.session != null;
       final isLoggedIn = isDemo || supabaseLoggedIn;
@@ -58,6 +63,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.onDispose(router.dispose);
+  return router;
 });
 
 class _RouterRefresh extends ChangeNotifier {

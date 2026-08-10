@@ -238,7 +238,12 @@ class SupabaseRepository implements AppRepository {
   }
 }
 
-final demoRepositoryProvider = Provider<DemoRepository>((ref) => DemoRepository());
+final demoRepositoryProvider = Provider<DemoRepository>((ref) {
+  final repo = DemoRepository();
+  // Keep the same seeded instance for the app lifetime.
+  ref.keepAlive();
+  return repo;
+});
 
 final appRepositoryProvider = Provider<AppRepository>((ref) {
   final isDemo = ref.watch(demoModeProvider);
