@@ -1,0 +1,28 @@
+# Play Store listing copy
+
+## App name
+TR Tech Solutions
+
+## Short description
+All-in-one business manager for IT service providers
+
+## Full description
+TR Technology Solutions is a business management platform for IT service companies.
+
+Manage clients, leads, services, projects, invoices, payments, expenses, and support tickets from one dark, modern dashboard.
+
+Features:
+• Dashboard with revenue and pipeline insights
+• Client and lead management
+• Domain/hosting service renewals
+• Invoices and payments tracking
+• Support ticket workflow
+• Secure Supabase cloud backend
+
+Built for TR Technology Solutions LLP.
+
+## Category
+Business
+
+## Tags
+CRM, invoicing, IT services, business management

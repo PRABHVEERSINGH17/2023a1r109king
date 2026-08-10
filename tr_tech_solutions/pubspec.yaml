@@ -3,6 +3,10 @@ description: TR Technology Solutions LLP - Business Management Platform
 publish_to: 'none'
 version: 1.0.0+1
 
+# version format: versionName+versionCode
+# For each Play Store upload, increase versionCode (the number after +).
+# Example next release: 1.0.1+2
+
 environment:
   sdk: ^3.5.4
 
