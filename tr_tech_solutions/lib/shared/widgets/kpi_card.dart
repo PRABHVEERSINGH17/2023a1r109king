@@ -25,22 +25,21 @@ class KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(18),
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         mouseCursor: onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
         child: Ink(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.border.withOpacity(0.9)),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
                 AppColors.surface,
-                color.withOpacity(0.06),
+                color.withOpacity(0.08),
               ],
             ),
           ),
@@ -48,68 +47,74 @@ class KpiCard extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(icon, color: color, size: 20),
+                    Container(
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            color.withOpacity(0.16),
+                            color.withOpacity(0.08),
+                          ],
                         ),
-                        const Spacer(),
-                        if (trend != null)
-                          Text(
-                            trend!,
-                            style: TextStyle(
-                              color: color,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: AppTypography.body,
-                            ),
-                          ),
-                        if (onTap != null) ...[
-                          const SizedBox(width: 4),
-                          Icon(Icons.arrow_outward_rounded, size: 16, color: color.withOpacity(0.8)),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        fontFamily: AppTypography.body,
+                        borderRadius: BorderRadius.circular(14),
                       ),
+                      child: Icon(icon, color: color, size: 20),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: AppTypography.display,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
+                    const Spacer(),
+                    if (trend != null)
                       Text(
-                        subtitle!,
-                        style: const TextStyle(
-                          color: AppColors.textMuted,
+                        trend!,
+                        style: TextStyle(
+                          color: color,
                           fontSize: 12,
+                          fontWeight: FontWeight.w700,
                           fontFamily: AppTypography.body,
                         ),
                       ),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_outward_rounded, size: 16, color: color.withOpacity(0.85)),
                     ],
                   ],
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    fontFamily: AppTypography.body,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: AppTypography.display,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.7,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                      fontFamily: AppTypography.body,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ),

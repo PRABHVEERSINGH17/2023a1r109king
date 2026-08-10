@@ -186,16 +186,16 @@ class _HeaderBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 68,
+      height: 70,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.86),
+        color: AppColors.surface.withOpacity(0.9),
         border: const Border(bottom: BorderSide(color: AppColors.border)),
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 320,
+            width: 340,
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search clients, invoices, tickets…',
@@ -204,9 +204,9 @@ class _HeaderBar extends StatelessWidget {
                 isDense: true,
                 filled: true,
                 fillColor: AppColors.surfaceMuted,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: AppColors.border),
                 ),
               ),
@@ -214,10 +214,10 @@ class _HeaderBar extends StatelessWidget {
           ),
           const Spacer(),
           IconButton(
-            icon: Badge(
+            icon: const Badge(
               backgroundColor: AppColors.accent,
-              label: const Text('3'),
-              child: const Icon(Icons.notifications_none_rounded),
+              label: Text('3'),
+              child: Icon(Icons.notifications_none_rounded),
             ),
             onPressed: () {},
           ),

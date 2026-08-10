@@ -31,33 +31,46 @@ class EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 84,
+              height: 84,
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
-                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primarySoft,
+                    AppColors.primary.withOpacity(0.12),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.primary.withOpacity(0.18)),
               ),
-              child: Icon(icon, size: 34, color: AppColors.primary),
+              child: Icon(icon, size: 36, color: AppColors.primary),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
             Text(
               title,
+              textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.w700,
                 fontFamily: AppTypography.display,
                 color: AppColors.textPrimary,
+                letterSpacing: -0.4,
               ),
             ),
             if (subtitle != null) ...[
               const SizedBox(height: 8),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontFamily: AppTypography.body,
-                  height: 1.4,
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: Text(
+                  subtitle!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontFamily: AppTypography.body,
+                    height: 1.45,
+                  ),
                 ),
               ),
             ],
@@ -90,7 +103,14 @@ class LoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: CircularProgressIndicator(color: AppColors.primary),
+      child: SizedBox(
+        width: 36,
+        height: 36,
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+          color: AppColors.primary,
+        ),
+      ),
     );
   }
 }
@@ -117,7 +137,15 @@ class AppErrorWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.danger),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.danger.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(Icons.error_outline_rounded, size: 32, color: AppColors.danger),
+            ),
             const SizedBox(height: 16),
             Text(
               message,

@@ -16,6 +16,7 @@ import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/kpi_card.dart';
+import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
 final dashboardStatsProvider = FutureProvider<DashboardStats>((ref) async {
@@ -139,39 +140,14 @@ class DashboardScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               FadeInUp(
-                child: Row(
-                  children: [
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dashboard',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: AppTypography.display,
-                              letterSpacing: -0.8,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            'Tap any module, KPI, or chart to jump in.',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontFamily: AppTypography.body,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton.filledTonal(
-                      tooltip: 'Refresh dashboard',
-                      onPressed: () => _refresh(ref),
-                      icon: const Icon(Icons.refresh_rounded),
-                    ),
-                  ],
+                child: PageHeader(
+                  title: 'Dashboard',
+                  subtitle: 'Tap any module, KPI, or chart to jump in.',
+                  action: IconButton.filledTonal(
+                    tooltip: 'Refresh dashboard',
+                    onPressed: () => _refresh(ref),
+                    icon: const Icon(Icons.refresh_rounded),
+                  ),
                 ),
               ),
               const SizedBox(height: 18),

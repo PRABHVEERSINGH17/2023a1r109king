@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
@@ -29,6 +30,13 @@ class ClientDetailScreen extends ConsumerWidget {
     ref.invalidate(paymentsProvider);
     ref.invalidate(leadsProvider);
     ref.invalidate(clientsProvider);
+  }
+
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return 'C';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
   @override
@@ -79,51 +87,20 @@ class ClientDetailScreen extends ConsumerWidget {
           (sum, p) => sum + ((p['amount'] as num?)?.toDouble() ?? 0),
         );
 
-        return Padding(
+        return ListView(
           padding: const EdgeInsets.all(24),
-          child: ListView(
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () => context.go('/clients'),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          client.name,
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: AppTypography.display,
-                            letterSpacing: -0.6,
-                          ),
-                        ),
-                        Text(
-                          [
-                            if (client.company != null && client.company!.isNotEmpty) client.company!,
-                            if (client.email != null) client.email!,
-                            if (client.phone != null) client.phone!,
-                          ].join(' · '),
-                          style: const TextStyle(color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                  ),
-                  StatusBadge(status: client.status),
-                ],
+          children: [
+            FadeInUp(
+              child: _HeroBanner(
+                client: client,
+                initials: _initials(client.name),
+                onBack: () => context.go('/clients'),
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Everything below is linked to this client. New clients also auto-create starter lead, project, invoice, payment, service, and ticket records.',
-                style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
+            ),
+            const SizedBox(height: 18),
+            FadeInUp(
+              delay: const Duration(milliseconds: 70),
+              child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
                 children: [
@@ -169,8 +146,11 @@ class ClientDetailScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Wrap(
+            ),
+            const SizedBox(height: 18),
+            FadeInUp(
+              delay: const Duration(milliseconds: 120),
+              child: Wrap(
                 spacing: 12,
                 runSpacing: 12,
                 children: [
@@ -182,121 +162,268 @@ class ClientDetailScreen extends ConsumerWidget {
                   _StatChip(label: 'Payments', value: Formatters.formatCurrency(paidTotal)),
                 ],
               ),
-              const SizedBox(height: 28),
-              _Section(
-                title: 'Leads',
-                empty: leads.isEmpty,
-                children: leads
-                    .map(
-                      (l) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(l.name),
-                        subtitle: Text('${l.source ?? 'lead'} · ${Formatters.formatCurrency(l.value)}'),
-                        trailing: StatusBadge(status: l.stage, compact: true),
-                      ),
-                    )
-                    .toList(),
+            ),
+            const SizedBox(height: 24),
+            FadeInUp(
+              delay: const Duration(milliseconds: 160),
+              child: Column(
+                children: [
+                  _Section(
+                    title: 'Leads',
+                    empty: leads.isEmpty,
+                    children: leads
+                        .map(
+                          (l) => _RecordRow(
+                            title: l.name,
+                            subtitle:
+                                '${l.source ?? 'lead'} · ${Formatters.formatCurrency(l.value)}',
+                            trailing: StatusBadge(status: l.stage, compact: true),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  _Section(
+                    title: 'Projects',
+                    empty: projects.isEmpty,
+                    onAdd: () async {
+                      await showLinkedProjectDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    children: projects
+                        .map(
+                          (p) => _RecordRow(
+                            title: p.title,
+                            subtitle: 'Budget ${Formatters.formatCurrency(p.budget)}',
+                            trailing: StatusBadge(status: p.status, compact: true),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  _Section(
+                    title: 'Invoices',
+                    empty: invoices.isEmpty,
+                    onAdd: () async {
+                      await showLinkedInvoiceDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    children: invoices
+                        .map(
+                          (i) => _RecordRow(
+                            title: i.invoiceNumber,
+                            subtitle: Formatters.formatCurrency(i.total),
+                            trailing: StatusBadge(status: i.status, compact: true),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  _Section(
+                    title: 'Services',
+                    empty: services.isEmpty,
+                    onAdd: () async {
+                      await showLinkedServiceDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    children: services
+                        .map(
+                          (s) => _RecordRow(
+                            title: s.name,
+                            subtitle: '${s.type} · expires ${Formatters.formatDate(s.expiryDate)}',
+                            trailing: StatusBadge(status: s.status, compact: true),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  _Section(
+                    title: 'Payments',
+                    empty: payments.isEmpty,
+                    onAdd: () async {
+                      await showLinkedPaymentDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    children: payments
+                        .map(
+                          (p) => _RecordRow(
+                            title: Formatters.formatCurrency(
+                              (p['amount'] as num?)?.toDouble() ?? 0,
+                            ),
+                            subtitle: p['method']?.toString() ?? '-',
+                            trailing: Text(
+                              Formatters.formatDate(
+                                p['paid_at'] != null
+                                    ? DateTime.tryParse(p['paid_at'].toString())
+                                    : null,
+                              ),
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                                fontFamily: AppTypography.body,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  _Section(
+                    title: 'Tickets',
+                    empty: tickets.isEmpty,
+                    onAdd: () async {
+                      await showLinkedTicketDialog(context, ref, clientId: clientId);
+                      await _refresh(ref);
+                    },
+                    children: tickets
+                        .map(
+                          (t) => _RecordRow(
+                            title: t.subject,
+                            subtitle: t.ticketNumber,
+                            trailing: StatusBadge(status: t.status, compact: true),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
               ),
-              _Section(
-                title: 'Projects',
-                empty: projects.isEmpty,
-                onAdd: () async {
-                  await showLinkedProjectDialog(context, ref, clientId: clientId);
-                  await _refresh(ref);
-                },
-                children: projects
-                    .map(
-                      (p) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(p.title),
-                        subtitle: Text('Budget ${Formatters.formatCurrency(p.budget)}'),
-                        trailing: StatusBadge(status: p.status, compact: true),
-                      ),
-                    )
-                    .toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _HeroBanner extends StatelessWidget {
+  final ClientModel client;
+  final String initials;
+  final VoidCallback onBack;
+
+  const _HeroBanner({
+    required this.client,
+    required this.initials,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: AppColors.heroGradient,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -20,
+            top: -30,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.06),
               ),
-              _Section(
-                title: 'Invoices',
-                empty: invoices.isEmpty,
-                onAdd: () async {
-                  await showLinkedInvoiceDialog(context, ref, clientId: clientId);
-                  await _refresh(ref);
-                },
-                children: invoices
-                    .map(
-                      (i) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(i.invoiceNumber),
-                        subtitle: Text(Formatters.formatCurrency(i.total)),
-                        trailing: StatusBadge(status: i.status, compact: true),
-                      ),
-                    )
-                    .toList(),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: onBack,
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      foregroundColor: Colors.white,
+                    ),
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  const Spacer(),
+                  StatusBadge(status: client.status),
+                ],
               ),
-              _Section(
-                title: 'Services',
-                empty: services.isEmpty,
-                onAdd: () async {
-                  await showLinkedServiceDialog(context, ref, clientId: clientId);
-                  await _refresh(ref);
-                },
-                children: services
-                    .map(
-                      (s) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(s.name),
-                        subtitle: Text('${s.type} · expires ${Formatters.formatDate(s.expiryDate)}'),
-                        trailing: StatusBadge(status: s.status, compact: true),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.white.withOpacity(0.18)),
+                    ),
+                    child: Text(
+                      initials,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.display,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 22,
+                        color: Colors.white,
                       ),
-                    )
-                    .toList(),
-              ),
-              _Section(
-                title: 'Payments',
-                empty: payments.isEmpty,
-                onAdd: () async {
-                  await showLinkedPaymentDialog(context, ref, clientId: clientId);
-                  await _refresh(ref);
-                },
-                children: payments
-                    .map(
-                      (p) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          Formatters.formatCurrency((p['amount'] as num?)?.toDouble() ?? 0),
-                        ),
-                        subtitle: Text(p['method']?.toString() ?? '-'),
-                        trailing: Text(
-                          Formatters.formatDate(
-                            p['paid_at'] != null ? DateTime.tryParse(p['paid_at'].toString()) : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'CLIENT HUB',
+                          style: TextStyle(
+                            color: AppColors.primaryLight,
+                            fontSize: 11,
+                            letterSpacing: 1.5,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: AppTypography.body,
                           ),
                         ),
-                      ),
-                    )
-                    .toList(),
+                        const SizedBox(height: 4),
+                        Text(
+                          client.name,
+                          style: const TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: AppTypography.display,
+                            letterSpacing: -0.7,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          [
+                            if (client.company != null && client.company!.isNotEmpty)
+                              client.company!,
+                            if (client.email != null) client.email!,
+                            if (client.phone != null) client.phone!,
+                          ].join(' · '),
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.78),
+                            fontFamily: AppTypography.body,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              _Section(
-                title: 'Tickets',
-                empty: tickets.isEmpty,
-                onAdd: () async {
-                  await showLinkedTicketDialog(context, ref, clientId: clientId);
-                  await _refresh(ref);
-                },
-                children: tickets
-                    .map(
-                      (t) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(t.subject),
-                        subtitle: Text(t.ticketNumber),
-                        trailing: StatusBadge(status: t.status, compact: true),
-                      ),
-                    )
-                    .toList(),
+              const SizedBox(height: 16),
+              Text(
+                'Linked lead, projects, invoices, payments, services, and tickets live here.',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.72),
+                  fontFamily: AppTypography.body,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
@@ -310,23 +437,35 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: AppColors.panelGradient,
+        ),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontFamily: AppTypography.body,
+            ),
+          ),
+          const SizedBox(height: 6),
           Text(
             value,
             style: const TextStyle(
               fontWeight: FontWeight.w700,
               fontFamily: AppTypography.display,
-              fontSize: 16,
+              fontSize: 17,
+              letterSpacing: -0.3,
             ),
           ),
         ],
@@ -351,12 +490,16 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: AppColors.panelGradient,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border.withOpacity(0.9)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +512,8 @@ class _Section extends StatelessWidget {
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontFamily: AppTypography.display,
-                    fontSize: 16,
+                    fontSize: 17,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
@@ -381,14 +525,65 @@ class _Section extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           if (empty)
-            const Text(
-              'No linked records yet — tap Add to create one for this client',
-              style: TextStyle(color: AppColors.textMuted),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No linked records yet — tap Add to create one for this client',
+                style: TextStyle(color: AppColors.textMuted, fontFamily: AppTypography.body),
+              ),
             )
           else
             ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _RecordRow extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Widget trailing;
+
+  const _RecordRow({
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontFamily: AppTypography.body,
+                    fontSize: 14.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontFamily: AppTypography.body,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          trailing,
         ],
       ),
     );

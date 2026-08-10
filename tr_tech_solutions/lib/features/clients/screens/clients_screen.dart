@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
+import 'package:tr_tech_solutions/core/theme/app_motion.dart';
+import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
 import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
@@ -32,55 +34,85 @@ class ClientsScreen extends ConsumerWidget {
     }
   }
 
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return 'C';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final clientsAsync = ref.watch(clientsProvider);
     final isDemo = ref.watch(demoModeProvider);
+    final wide = MediaQuery.of(context).size.width >= 980;
 
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageHeader(
-            title: 'Clients',
-            subtitle: isDemo
-                ? 'Add a client → lead, invoice, payment & more are created automatically'
-                : 'Add a client → related lead, project, invoice, payment, service & ticket are created',
-            action: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  tooltip: 'Refresh',
-                  onPressed: () => ref.invalidate(clientsProvider),
-                  icon: const Icon(Icons.refresh),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: () => _showClientDialog(context, ref),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Client'),
-                ),
-              ],
+          FadeInUp(
+            child: PageHeader(
+              title: 'Clients',
+              subtitle: isDemo
+                  ? 'Add a client and related lead, invoice, payment & more appear automatically.'
+                  : 'Your client hub — related records are created when you add someone new.',
+              action: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton.filledTonal(
+                    tooltip: 'Refresh',
+                    onPressed: () => ref.invalidate(clientsProvider),
+                    icon: const Icon(Icons.refresh_rounded),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton.icon(
+                    onPressed: () => _showClientDialog(context, ref),
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Add Client'),
+                  ),
+                ],
+              ),
             ),
           ),
           if (isDemo) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.primary.withOpacity(0.35)),
-              ),
-              child: const Text(
-                'Demo Mode: Add a client and related lead/project/invoice/payment/service/ticket are created automatically.',
-                style: TextStyle(fontSize: 13),
+            const SizedBox(height: 16),
+            FadeInUp(
+              delay: const Duration(milliseconds: 60),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.primaryLight.withOpacity(0.08),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.22)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.auto_awesome_outlined, size: 18, color: AppColors.primary),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Demo Mode — new clients auto-create lead, project, invoice, payment, service & ticket.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: AppTypography.body,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 22),
           Expanded(
             child: clientsAsync.when(
               loading: () => const LoadingWidget(),
@@ -104,58 +136,46 @@ class ClientsScreen extends ConsumerWidget {
                     onSecondary: isDemo ? null : () => _loadDemoData(context, ref),
                   );
                 }
-                return DataListCard(
+
+                return FadeInUp(
+                  delay: const Duration(milliseconds: 100),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(minWidth: constraints.maxWidth),
-                            child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Name')),
-                                DataColumn(label: Text('Email')),
-                                DataColumn(label: Text('Phone')),
-                                DataColumn(label: Text('Company')),
-                                DataColumn(label: Text('Status')),
-                                DataColumn(label: Text('Actions')),
-                              ],
-                              rows: clients.map((client) {
-                                return DataRow(
-                                  onSelectChanged: (_) => context.go('/clients/${client.id}'),
-                                  cells: [
-                                  DataCell(
-                                    Text(client.name),
-                                    onTap: () => context.go('/clients/${client.id}'),
-                                  ),
-                                  DataCell(Text(client.email ?? '-')),
-                                  DataCell(Text(client.phone ?? '-')),
-                                  DataCell(Text(client.company ?? '-')),
-                                  DataCell(StatusBadge(status: client.status, compact: true)),
-                                  DataCell(Row(
-                                    children: [
-                                      IconButton(
-                                        tooltip: 'Open client hub',
-                                        icon: const Icon(Icons.open_in_new, size: 18),
-                                        onPressed: () => context.go('/clients/${client.id}'),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, size: 18),
-                                        onPressed: () =>
-                                            _showClientDialog(context, ref, client: client),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                                        onPressed: () => _deleteClient(context, ref, client.id),
-                                      ),
-                                    ],
-                                  )),
-                                ],
-                                );
-                              }).toList(),
-                            ),
-                          ),
+                      final crossAxisCount = wide
+                          ? (constraints.maxWidth > 1200 ? 3 : 2)
+                          : 1;
+                      if (crossAxisCount == 1) {
+                        return ListView.separated(
+                          itemCount: clients.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) =>
+                              _ClientCard(
+                                client: clients[index],
+                                initials: _initials(clients[index].name),
+                                onOpen: () => context.go('/clients/${clients[index].id}'),
+                                onEdit: () =>
+                                    _showClientDialog(context, ref, client: clients[index]),
+                                onDelete: () =>
+                                    _deleteClient(context, ref, clients[index].id),
+                              ),
+                        );
+                      }
+                      return GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.55,
+                        ),
+                        itemCount: clients.length,
+                        itemBuilder: (context, index) => _ClientCard(
+                          client: clients[index],
+                          initials: _initials(clients[index].name),
+                          onOpen: () => context.go('/clients/${clients[index].id}'),
+                          onEdit: () =>
+                              _showClientDialog(context, ref, client: clients[index]),
+                          onDelete: () =>
+                              _deleteClient(context, ref, clients[index].id),
                         ),
                       );
                     },
@@ -218,7 +238,8 @@ class ClientsScreen extends ConsumerWidget {
                   'name': nameController.text.trim(),
                   'email': emailController.text.trim().isEmpty ? null : emailController.text.trim(),
                   'phone': phoneController.text.trim().isEmpty ? null : phoneController.text.trim(),
-                  'company': companyController.text.trim().isEmpty ? null : companyController.text.trim(),
+                  'company':
+                      companyController.text.trim().isEmpty ? null : companyController.text.trim(),
                   'status': status,
                 };
 
@@ -226,7 +247,6 @@ class ClientsScreen extends ConsumerWidget {
                   if (client == null) {
                     await service.createClient(data);
                     ref.invalidate(clientsProvider);
-                    // Related modules are auto-created with the client.
                     ref.invalidate(leadsProvider);
                     ref.invalidate(projectsProvider);
                     ref.invalidate(invoicesProvider);
@@ -293,5 +313,133 @@ class ClientsScreen extends ConsumerWidget {
         }
       }
     }
+  }
+}
+
+class _ClientCard extends StatelessWidget {
+  final ClientModel client;
+  final String initials;
+  final VoidCallback onOpen;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _ClientCard({
+    required this.client,
+    required this.initials,
+    required this.onOpen,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SoftTile(
+      onTap: onOpen,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.18),
+                      AppColors.brand.withOpacity(0.12),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    fontFamily: AppTypography.display,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.brand,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      client.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: AppTypography.display,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      client.company?.isNotEmpty == true ? client.company! : 'No company',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontFamily: AppTypography.body,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              StatusBadge(status: client.status, compact: true),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            _contactLine(client),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 12.5,
+              height: 1.35,
+              fontFamily: AppTypography.body,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              TextButton(
+                onPressed: onOpen,
+                child: const Text('Open hub'),
+              ),
+              const Spacer(),
+              IconButton(
+                tooltip: 'Edit',
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined, size: 18),
+              ),
+              IconButton(
+                tooltip: 'Delete',
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _contactLine(ClientModel client) {
+    final bits = <String>[
+      if (client.email != null && client.email!.isNotEmpty) client.email!,
+      if (client.phone != null && client.phone!.isNotEmpty) client.phone!,
+    ];
+    if (bits.isEmpty) return 'Open hub to manage invoices, payments & more';
+    return bits.join(' · ');
   }
 }

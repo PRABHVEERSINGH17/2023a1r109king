@@ -14,22 +14,33 @@ class StatusBadge extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 10,
-        vertical: compact ? 3 : 5,
+        horizontal: compact ? 9 : 11,
+        vertical: compact ? 4 : 6,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.28)),
+        border: Border.all(color: color.withOpacity(0.22)),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: compact ? 11 : 12,
-          fontWeight: FontWeight.w700,
-          fontFamily: AppTypography.body,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: compact ? 5 : 6,
+            height: compact ? 5 : 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          SizedBox(width: compact ? 6 : 7),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: compact ? 11 : 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: AppTypography.body,
+            ),
+          ),
+        ],
       ),
     );
   }
