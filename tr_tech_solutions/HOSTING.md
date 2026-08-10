@@ -99,6 +99,8 @@ flutter pub get
 flutter build apk --release
 ```
 
+If Gradle complains about version, pull latest on this branch — Android is set to **Gradle 8.11.1 + AGP 8.7.3** (requires Flutter’s minimum 8.7).
+
 APK file:
 
 ```text
