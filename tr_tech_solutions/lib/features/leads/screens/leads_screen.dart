@@ -58,9 +58,7 @@ class LeadsScreen extends ConsumerWidget {
                         ref.invalidate(leadsProvider);
                       },
                       itemBuilder: (_) => const [
-                        PopupMenuItem(value: 'new', child: Text('New')),
                         PopupMenuItem(value: 'contacted', child: Text('Contacted')),
-                        PopupMenuItem(value: 'proposal', child: Text('Proposal')),
                         PopupMenuItem(value: 'negotiation', child: Text('Negotiation')),
                         PopupMenuItem(value: 'won', child: Text('Won')),
                         PopupMenuItem(value: 'lost', child: Text('Lost')),
@@ -127,7 +125,7 @@ class LeadsScreen extends ConsumerWidget {
     final emailController = TextEditingController();
     final companyController = TextEditingController();
     final valueController = TextEditingController();
-    var stage = 'new';
+    var stage = 'contacted';
 
     await showDialog(
       context: context,
@@ -156,12 +154,12 @@ class LeadsScreen extends ConsumerWidget {
                   value: stage,
                   decoration: const InputDecoration(labelText: 'Stage'),
                   items: const [
-                    DropdownMenuItem(value: 'new', child: Text('New')),
                     DropdownMenuItem(value: 'contacted', child: Text('Contacted')),
-                    DropdownMenuItem(value: 'proposal', child: Text('Proposal Sent')),
                     DropdownMenuItem(value: 'negotiation', child: Text('Negotiation')),
+                    DropdownMenuItem(value: 'won', child: Text('Won')),
+                    DropdownMenuItem(value: 'lost', child: Text('Lost')),
                   ],
-                  onChanged: (v) => setState(() => stage = v ?? 'new'),
+                  onChanged: (v) => setState(() => stage = v ?? 'contacted'),
                 ),
               ],
             ),

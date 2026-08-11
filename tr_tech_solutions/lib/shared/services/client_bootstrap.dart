@@ -63,7 +63,7 @@ Future<ClientBootstrapResult> bootstrapRelatedRecordsForClient(
       'title': '$label Onboarding',
       'description': 'Starter project created with this client',
       'budget': 25000,
-      'status': 'planning',
+      'status': 'in_progress',
       'due_date': dueStr,
     });
   });
@@ -192,7 +192,7 @@ Future<ClientBootstrapResult> ensureClientRelatedRecords(
         'client_id': client.id,
         'title': '$label Onboarding',
         'budget': 25000,
-        'status': 'planning',
+        'status': 'in_progress',
         'due_date': dueStr,
       });
     });

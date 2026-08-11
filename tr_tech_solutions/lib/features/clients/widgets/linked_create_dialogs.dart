@@ -71,10 +71,10 @@ Future<void> showLinkedProjectDialog(
                   value: status,
                   decoration: const InputDecoration(labelText: 'Status'),
                   items: const [
-                    DropdownMenuItem(value: 'planning', child: Text('Planning')),
                     DropdownMenuItem(value: 'in_progress', child: Text('In Progress')),
                     DropdownMenuItem(value: 'review', child: Text('Review')),
                     DropdownMenuItem(value: 'completed', child: Text('Completed')),
+                    DropdownMenuItem(value: 'on_hold', child: Text('On Hold')),
                   ],
                   onChanged: (v) => setState(() => status = v ?? 'in_progress'),
                 ),

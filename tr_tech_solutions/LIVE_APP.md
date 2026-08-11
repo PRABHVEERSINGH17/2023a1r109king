@@ -1,47 +1,25 @@
 # Make TR Tech a fully LIVE app
 
-## Already verified
+## Status: LIVE ✓
 
-- Confirm email is **OFF**
+Verified against project `izpxnkovciqjotfbofkc`:
+
+- Confirm email **OFF**
 - Live Sign Up / Sign In work
+- Schema aligned (`user_id`, `company`, `tickets`, …)
+- **Create client** works in the cloud
+- **Create invoice** + dashboard stats work
 
-## Required now (tables still wrong)
+## Use the live app
 
-Your Supabase tables are still the old shape (no `user_id` on clients).  
-Until this SQL runs, **Add Client** cannot save to the cloud.
+1. Open the app (APK or Chrome)
+2. **Exit Demo — Go Online**
+3. **Create Online Account** (real email + password) or **Sign In**
+4. **Settings** → should show **Online — live Supabase backend**
+5. **Clients → Add Client** → saves to Supabase
 
-### Run this (safer ALTER script)
+Demo Mode still works anytime for sample data.
 
-1. Open https://supabase.com/dashboard → project **izpxnkovciqjotfbofkc**
-2. **SQL Editor** → **New query**
-3. Open this file in the repo:
+## Optional
 
-`tr_tech_solutions/supabase/align_existing_schema.sql`
-
-Or download raw:
-
-https://raw.githubusercontent.com/PRABHVEERSINGH17/2023a1r109king/cursor/clickable-dashboard-2b7a/tr_tech_solutions/supabase/align_existing_schema.sql
-
-4. Copy **ALL** text → paste in SQL Editor → **Run**
-5. You should see green **Success**
-6. Run this check query:
-
-```sql
-select column_name
-from information_schema.columns
-where table_schema = 'public' and table_name = 'clients'
-order by 1;
-```
-
-You must see **`user_id`** and **`company`** in the list.
-
-7. Reply: **schema aligned**
-
----
-
-## Then in the app
-
-1. Exit Demo → Go Online  
-2. Create Online Account / Sign In  
-3. Clients → Add Client  
-4. Settings should say **Online — live Supabase backend**
+Google / Apple / LinkedIn still need providers enabled (`SOCIAL_LOGIN.md`). Not required for a live CRM.
