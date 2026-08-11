@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
-import 'package:tr_tech_solutions/features/auth/widgets/social_auth_buttons.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -56,15 +55,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             content: SingleChildScrollView(child: Text(e.steps)),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  await ref.read(authServiceProvider).enterDemoMode();
-                  if (!context.mounted) return;
-                  context.go('/dashboard');
-                },
-                child: const Text('Demo Mode'),
-              ),
             ],
           ),
         );
@@ -120,8 +110,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Create a LIVE cloud account on Supabase. '
-                          'First turn OFF Confirm email in the Supabase dashboard (see LIVE_APP.md).',
+                          'Create your live TR Tech account. Data saves to the cloud.',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 24),
@@ -188,8 +177,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 : const Text('Create Account'),
                           ),
                         ),
-                        const SizedBox(height: 18),
-                        const SocialAuthButtons(),
                         const SizedBox(height: 14),
                         Wrap(
                           alignment: WrapAlignment.center,

@@ -1,25 +1,19 @@
-# Make TR Tech a fully LIVE app
+# Live authentication (Demo Mode closed)
 
-## Status: LIVE ✓
+The app uses **real Supabase email login only**.
 
-Verified against project `izpxnkovciqjotfbofkc`:
+## In the app
 
-- Confirm email **OFF**
-- Live Sign Up / Sign In work
-- Schema aligned (`user_id`, `company`, `tickets`, …)
-- **Create client** works in the cloud
-- **Create invoice** + dashboard stats work
+1. Open TR Tech Solutions  
+2. Tap **Create Account**  
+3. Enter name, email, password (6+ chars)  
+4. You land on the dashboard signed in to the cloud  
+5. Next time: **Sign In** with the same email/password  
 
-## Use the live app
+**Settings** shows: `Online — live Supabase backend`
 
-1. Open the app (APK or Chrome)
-2. **Exit Demo — Go Online**
-3. **Create Online Account** (real email + password) or **Sign In**
-4. **Settings** → should show **Online — live Supabase backend**
-5. **Clients → Add Client** → saves to Supabase
+## Notes
 
-Demo Mode still works anytime for sample data.
-
-## Optional
-
-Google / Apple / LinkedIn still need providers enabled (`SOCIAL_LOGIN.md`). Not required for a live CRM.
+- Demo Mode buttons are removed from login  
+- Google / Apple / LinkedIn are optional later (`SOCIAL_LOGIN.md`)  
+- Confirm email must stay **OFF** in Supabase (already verified)

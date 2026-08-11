@@ -3,75 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
-import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
+import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
-import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
-import 'package:tr_tech_solutions/features/clients/providers/clients_provider.dart';
-import 'package:tr_tech_solutions/features/dashboard/screens/dashboard_screen.dart';
-import 'package:tr_tech_solutions/features/invoices/screens/invoices_screen.dart';
-import 'package:tr_tech_solutions/features/leads/screens/leads_screen.dart';
-import 'package:tr_tech_solutions/features/payments/screens/payments_screen.dart';
-import 'package:tr_tech_solutions/features/projects/screens/projects_screen.dart';
-import 'package:tr_tech_solutions/features/services/screens/services_screen.dart';
-import 'package:tr_tech_solutions/features/tickets/screens/tickets_screen.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
-  void _invalidateAll(WidgetRef ref) {
-    ref.invalidate(clientsProvider);
-    ref.invalidate(leadsProvider);
-    ref.invalidate(projectsProvider);
-    ref.invalidate(invoicesProvider);
-    ref.invalidate(paymentsProvider);
-    ref.invalidate(servicesProvider);
-    ref.invalidate(ticketsProvider);
-    ref.invalidate(dashboardStatsProvider);
-  }
-
-  Future<void> _goOnline(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Exit Demo Mode?'),
-        content: const Text(
-          'You will leave sample data and create a real online account.\n\n'
-          'Next step: Sign Up with your email (or Google / Apple / LinkedIn).',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Go Online'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) return;
-
-    await ref.read(authServiceProvider).exitDemoAndGoOnline();
-    _invalidateAll(ref);
-    if (context.mounted) {
-      context.go('/login?mode=online');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            SupabaseConfig.isConfigured
-                ? 'Demo exited. Create your online account to continue.'
-                : 'Demo exited. Add Supabase keys first (see GO_ONLINE.md).',
-          ),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final email = ref.watch(authServiceProvider).currentUserEmail ?? 'Not logged in';
     final isDemo = ref.watch(demoModeProvider);
-    final isLocal = ref.watch(localAuthProvider);
 
     return Padding(
       padding: AppBreakpoints.pagePadding(context),
@@ -79,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           const PageHeader(
             title: 'Settings',
-            subtitle: 'Account, workspace mode, and app info',
+            subtitle: 'Account and app info',
           ),
           const SizedBox(height: 24),
           Card(
@@ -102,67 +45,28 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: Icon(
-                    isDemo
-                        ? Icons.science_outlined
-                        : isLocal
-                            ? Icons.phone_android_outlined
-                            : Icons.cloud_done_outlined,
+                    isDemo ? Icons.science_outlined : Icons.cloud_done_outlined,
                     color: AppColors.primary,
                   ),
                   title: const Text('Workspace Mode'),
                   subtitle: Text(
                     isDemo
-                        ? 'Demo Mode — sample data on this device'
-                        : isLocal
-                            ? 'Signed in on this device (email/password)'
-                            : SupabaseConfig.isConfigured
-                                ? 'Online — live Supabase backend'
-                                : 'Online preferred — configure Supabase to sync data',
+                        ? 'Demo leftover — sign out and create a live account'
+                        : SupabaseConfig.isConfigured
+                            ? 'Online — live Supabase backend'
+                            : 'Configure Supabase to sync data',
                   ),
                 ),
                 if (isDemo) ...[
                   const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.public_rounded, color: AppColors.primary),
-                    title: const Text('Exit Demo Mode & Go Online'),
-                    subtitle: const Text('Create a real account and use live cloud data'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _goOnline(context, ref),
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.refresh_rounded),
-                    title: const Text('Reset Demo Workspace'),
-                    subtitle: const Text('Reload sample clients, invoices, payments & more'),
+                    title: const Text('Switch to live account'),
+                    subtitle: const Text('Sign out and create / sign in with email'),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () async {
-                      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
-                      _invalidateAll(ref);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Demo workspace reset — sample data loaded')),
-                        );
-                        context.go('/dashboard');
-                      }
-                    },
-                  ),
-                ],
-                if (!isDemo) ...[
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.bolt_rounded),
-                    title: const Text('Switch to Demo Mode'),
-                    subtitle: const Text('Use the fully working sample CRM'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: true);
-                      _invalidateAll(ref);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Demo Mode enabled')),
-                        );
-                        context.go('/dashboard');
-                      }
+                      await ref.read(authServiceProvider).exitDemoAndGoOnline();
+                      if (context.mounted) context.go('/login');
                     },
                   ),
                 ],
@@ -190,8 +94,7 @@ class SettingsScreen extends ConsumerWidget {
                   Text('TR Technology Solutions LLP', style: TextStyle(color: AppColors.textSecondary)),
                   Text(
                     'Business Management Platform v1.0.0\n'
-                    'Modules: Dashboard, Clients, Leads, Services, Projects,\n'
-                    'Invoices, Payments, Expenses, Tickets, Reports',
+                    'Live cloud authentication via Supabase',
                     style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.4),
                   ),
                 ],

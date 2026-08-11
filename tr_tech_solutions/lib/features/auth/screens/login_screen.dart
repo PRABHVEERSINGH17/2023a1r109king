@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/theme/app_colors.dart';
 import 'package:tr_tech_solutions/core/theme/app_motion.dart';
 import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
-import 'package:tr_tech_solutions/features/auth/widgets/social_auth_buttons.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -18,35 +16,10 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _emailController;
-  late final TextEditingController _passwordController;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _onlineMode = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _emailController = TextEditingController();
-    _passwordController = TextEditingController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final mode = GoRouterState.of(context).uri.queryParameters['mode'];
-    final online = mode == 'online';
-    if (online != _onlineMode) {
-      _onlineMode = online;
-      if (_onlineMode) {
-        _emailController.clear();
-        _passwordController.clear();
-      } else if (_emailController.text.isEmpty) {
-        _emailController.text = 'admin@trtechsolutions.com';
-        _passwordController.text = 'demo1234';
-      }
-    }
-  }
 
   @override
   void dispose() {
@@ -63,7 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authServiceProvider).signIn(
             _emailController.text.trim(),
             _passwordController.text,
-            requireCloud: _onlineMode,
+            requireCloud: true,
           );
       if (mounted) context.go('/dashboard');
     } catch (e) {
@@ -76,13 +49,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             content: Text(e.steps),
             actions: [
               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _enterDemo();
-                },
-                child: const Text('Demo Mode'),
-              ),
             ],
           ),
         );
@@ -97,29 +63,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         SnackBar(
           content: Text(
             isInvalid
-                ? (_onlineMode
-                    ? 'Invalid credentials. Create Online Account first, or turn OFF Confirm email in Supabase.'
-                    : 'Invalid credentials. Use Sign Up first, or continue in Demo Mode.')
+                ? 'Invalid email or password. Create an account first with Sign Up.'
                 : 'Login failed: $e',
-          ),
-          action: SnackBarAction(
-            label: 'Demo Mode',
-            textColor: AppColors.primaryLight,
-            onPressed: _enterDemo,
           ),
         ),
       );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _enterDemo() async {
-    setState(() => _isLoading = true);
-    try {
-      // Restore saved workspace when present (clients survive refresh).
-      await ref.read(authServiceProvider).enterDemoMode(resetWorkspace: false);
-      if (mounted) context.go('/dashboard');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -161,14 +109,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               Expanded(child: FadeInUp(child: _BrandPanel())),
                               const SizedBox(width: 28),
-                              Expanded(child: FadeInUp(delay: const Duration(milliseconds: 120), child: _buildLoginCard())),
+                              Expanded(
+                                child: FadeInUp(
+                                  delay: const Duration(milliseconds: 120),
+                                  child: _buildLoginCard(),
+                                ),
+                              ),
                             ],
                           )
                         : Column(
                             children: [
                               FadeInUp(child: _BrandPanel(compact: true)),
                               const SizedBox(height: 20),
-                              FadeInUp(delay: const Duration(milliseconds: 100), child: _buildLoginCard()),
+                              FadeInUp(
+                                delay: const Duration(milliseconds: 100),
+                                child: _buildLoginCard(),
+                              ),
                             ],
                           ),
                   ),
@@ -195,9 +151,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              _onlineMode ? 'Go Online' : 'Welcome back',
-              style: const TextStyle(
+            const Text(
+              'Sign in',
+              style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 fontFamily: AppTypography.display,
@@ -206,11 +162,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              _onlineMode
-                  ? 'Create or sign in to your live TR Tech account.'
-                  : 'Sign in to manage clients, services, and revenue.',
-              style: const TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
+            const Text(
+              'Live TR Tech CRM — your data saves to the cloud.',
+              style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
             ),
             const SizedBox(height: 18),
             Container(
@@ -219,13 +173,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
-                _onlineMode
-                    ? 'LIVE mode: Sign Up with a real email after turning OFF Confirm email in Supabase (LIVE_APP.md).\nNo Google Client ID needed.'
-                    : (SupabaseConfig.isConfigured
-                        ? 'Demo: admin@trtechsolutions.com / demo1234\nOr Sign Up with your email — Sign In works after that.'
-                        : 'Sign Up with your email, or use Demo Mode to explore sample data.'),
-                style: const TextStyle(
+              child: const Text(
+                'Use your real email and password.\nNew here? Tap Create Account below.',
+                style: TextStyle(
                   color: AppColors.brand,
                   fontSize: 12,
                   height: 1.4,
@@ -266,91 +216,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               },
             ),
             const SizedBox(height: 22),
-            if (_onlineMode) ...[
-              SizedBox(
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : () => context.go('/signup'),
-                  child: const Text('Create Online Account'),
-                ),
+            SizedBox(
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _signIn,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Sign In'),
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _signIn,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Sign In'),
-                ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 48,
+              child: OutlinedButton(
+                onPressed: _isLoading ? null : () => context.go('/signup'),
+                child: const Text('Create Account'),
               ),
-              const SizedBox(height: 18),
-              const SocialAuthButtons(),
-              const SizedBox(height: 14),
-              TextButton(
-                onPressed: _isLoading ? null : _enterDemo,
-                child: const Text('Back to Demo Mode'),
-              ),
-            ] else ...[
-              SizedBox(
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _enterDemo,
-                  icon: const Icon(Icons.bolt_rounded),
-                  label: const Text('Continue with Demo Mode'),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Recommended — full CRM with sample clients, invoices & payments',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textMuted,
-                  fontSize: 12,
-                  fontFamily: AppTypography.body,
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _signIn,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Sign In'),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const SocialAuthButtons(),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: _isLoading ? null : () => context.go('/login?mode=online'),
-                child: const Text('Exit Demo — Go Online'),
-              ),
-              const SizedBox(height: 14),
-              Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account?",
-                    style: TextStyle(color: AppColors.textSecondary, fontFamily: AppTypography.body),
-                  ),
-                  TextButton(
-                    onPressed: () => context.go('/signup'),
-                    child: const Text('Sign Up'),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ],
         ),
       ),
@@ -371,65 +257,38 @@ class _BrandPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
+            'TR TECH',
+            style: TextStyle(
+              fontFamily: AppTypography.display,
+              fontWeight: FontWeight.w800,
+              fontSize: compact ? 18 : 22,
+              letterSpacing: 2.2,
+              color: Colors.white.withOpacity(0.9),
+            ),
+          ),
+          SizedBox(height: compact ? 12 : 18),
+          Text(
             'TR Technology\nSolutions',
             style: TextStyle(
               fontFamily: AppTypography.display,
               fontWeight: FontWeight.w700,
-              fontSize: compact ? 36 : 52,
+              fontSize: compact ? 34 : 46,
               height: 1.05,
-              letterSpacing: -1.4,
-              color: AppColors.textOnBrand,
+              letterSpacing: -1.2,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Text(
-            'A modern workspace for clients, renewals, invoices, and growth.',
+            'Manage clients, invoices, services, and revenue in one live CRM.',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.82),
-              fontSize: compact ? 15 : 18,
-              height: 1.45,
+              color: Colors.white.withOpacity(0.78),
               fontFamily: AppTypography.body,
+              height: 1.45,
+              fontSize: 14.5,
             ),
           ),
-          if (!compact) ...[
-            const SizedBox(height: 28),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: const [
-                _FeatureChip(label: 'Clients & CRM'),
-                _FeatureChip(label: 'Service renewals'),
-                _FeatureChip(label: 'Sales reports'),
-              ],
-            ),
-          ],
         ],
-      ),
-    );
-  }
-}
-
-class _FeatureChip extends StatelessWidget {
-  final String label;
-  const _FeatureChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.16)),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          color: AppColors.textOnBrand,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          fontFamily: AppTypography.body,
-        ),
       ),
     );
   }
@@ -438,6 +297,7 @@ class _FeatureChip extends StatelessWidget {
 class _Blob extends StatelessWidget {
   final double size;
   final Color color;
+
   const _Blob({required this.size, required this.color});
 
   @override
@@ -445,10 +305,7 @@ class _Blob extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

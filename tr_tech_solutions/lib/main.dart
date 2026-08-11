@@ -13,15 +13,18 @@ import 'package:tr_tech_solutions/shared/services/local_account_store.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Restore Demo Mode / local accounts before the first frame.
+  // Restore preferred mode. Production defaults to live cloud auth.
   await DemoPersistence.init();
   await LocalAccountStore.init();
+  // Close Demo Mode for real-app installs.
+  await DemoPersistence.setPreferLive(true);
+  await DemoPersistence.setDemoMode(false);
 
-  // Optional live backend keys. Demo Mode + local accounts work without this.
+  // Live backend keys.
   try {
     await dotenv.load(fileName: 'assets/supabase.env');
   } catch (_) {
-    // Continue — Demo Mode remains fully usable.
+    // Continue — Sign In will report if config is missing.
   }
 
   if (SupabaseConfig.isConfigured) {
@@ -34,14 +37,14 @@ Future<void> main() async {
         ),
       );
     } catch (_) {
-      // Continue — Demo Mode / local auth remain fully usable.
+      // Continue — login screen will surface auth errors.
     }
   }
 
   runApp(
     ProviderScope(
       overrides: [
-        demoModeProvider.overrideWith((ref) => DemoPersistence.isDemoMode),
+        demoModeProvider.overrideWith((ref) => false),
         localAuthProvider.overrideWith((ref) => LocalAccountStore.hasSession),
       ],
       child: const TrTechApp(),
