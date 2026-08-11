@@ -3,6 +3,10 @@ description: TR Technology Solutions LLP - Business Management Platform
 publish_to: 'none'
 version: 1.0.0+1
 
+# version format: versionName+versionCode
+# For each Play Store upload, increase versionCode (the number after +).
+# Example next release: 1.0.1+2
+
 environment:
   sdk: ^3.5.4
 
@@ -15,17 +19,39 @@ dependencies:
   go_router: ^14.6.2
   fl_chart: ^0.69.2
   intl: ^0.19.0
-  google_fonts: ^6.2.1
   flutter_dotenv: ^5.2.1
   uuid: ^4.5.1
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
 
+dependency_overrides:
+  # Flutter 3.24 Android build: newer app_links expects flutter.compileSdkVersion
+  app_links: 6.3.2
+
 flutter:
   uses-material-design: true
   assets:
-    - assets/.env
-    - assets/.env.example
+    - assets/supabase.env
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Outfit-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Outfit-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit-Bold.ttf
+          weight: 700
+    - family: DMSans
+      fonts:
+        - asset: assets/fonts/DMSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/DMSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/DMSans-Bold.ttf
+          weight: 700

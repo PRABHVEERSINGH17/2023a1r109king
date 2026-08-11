@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 
 final expensesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final service = ref.watch(dataServiceProvider);
@@ -19,7 +21,7 @@ class ExpensesScreen extends ConsumerWidget {
     final expensesAsync = ref.watch(expensesProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -46,28 +48,43 @@ class ExpensesScreen extends ConsumerWidget {
                     onAction: () => _showExpenseDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Description')),
-                        DataColumn(label: Text('Category')),
-                        DataColumn(label: Text('Amount')),
-                        DataColumn(label: Text('Vendor')),
-                        DataColumn(label: Text('Date')),
-                      ],
-                      rows: expenses.map((e) {
-                        return DataRow(cells: [
-                          DataCell(Text(e['description'] as String? ?? '-')),
-                          DataCell(Text(e['category'] as String? ?? '-')),
-                          DataCell(Text(Formatters.formatCurrency((e['amount'] as num).toDouble()))),
-                          DataCell(Text(e['vendor'] as String? ?? '-')),
-                          DataCell(Text(Formatters.formatDate(
-                              e['expense_date'] != null ? DateTime.parse(e['expense_date'] as String) : null))),
-                        ]);
-                      }).toList(),
-                    ),
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Description')),
+                      DataColumn(label: Text('Category')),
+                      DataColumn(label: Text('Amount')),
+                      DataColumn(label: Text('Vendor')),
+                      DataColumn(label: Text('Date')),
+                    ],
+                    rows: expenses.map((e) {
+                      return DataRow(cells: [
+                        DataCell(Text(e['description'] as String? ?? '-')),
+                        DataCell(Text(e['category'] as String? ?? '-')),
+                        DataCell(Text(Formatters.formatCurrency((e['amount'] as num).toDouble()))),
+                        DataCell(Text(e['vendor'] as String? ?? '-')),
+                        DataCell(Text(Formatters.formatDate(
+                            e['expense_date'] != null ? DateTime.parse(e['expense_date'] as String) : null))),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: expenses.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final e = expenses[index];
+                      return MobileRecordTile(
+                        title: e['description'] as String? ?? 'Expense',
+                        subtitle: [
+                          e['category'] as String? ?? '-',
+                          Formatters.formatCurrency((e['amount'] as num).toDouble()),
+                          if ((e['vendor'] as String?)?.isNotEmpty == true) e['vendor'] as String,
+                          Formatters.formatDate(
+                              e['expense_date'] != null ? DateTime.parse(e['expense_date'] as String) : null),
+                        ].join(' · '),
+                      );
+                    },
                   ),
                 );
               },
@@ -88,9 +105,10 @@ class ExpensesScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           title: const Text('Add Expense'),
-          content: SizedBox(
-            width: 400,
+          content: responsiveDialogBody(
+            ctx,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

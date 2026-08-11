@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
 import 'package:tr_tech_solutions/shared/models/lead.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 import 'package:tr_tech_solutions/shared/widgets/status_badge.dart';
 
 final leadsProvider = FutureProvider<List<LeadModel>>((ref) async {
@@ -21,7 +23,7 @@ class LeadsScreen extends ConsumerWidget {
     final leadsAsync = ref.watch(leadsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -48,52 +50,66 @@ class LeadsScreen extends ConsumerWidget {
                     onAction: () => _showLeadDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Name')),
-                        DataColumn(label: Text('Company')),
-                        DataColumn(label: Text('Email')),
-                        DataColumn(label: Text('Value')),
-                        DataColumn(label: Text('Stage')),
-                        DataColumn(label: Text('Actions')),
+
+                Widget stageMenu(LeadModel lead) => PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, size: 18),
+                      onSelected: (stage) async {
+                        await ref.read(dataServiceProvider)?.updateLeadStage(lead.id, stage);
+                        ref.invalidate(leadsProvider);
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'contacted', child: Text('Contacted')),
+                        PopupMenuItem(value: 'negotiation', child: Text('Negotiation')),
+                        PopupMenuItem(value: 'won', child: Text('Won')),
+                        PopupMenuItem(value: 'lost', child: Text('Lost')),
                       ],
-                      rows: leads.map((lead) {
-                        return DataRow(cells: [
-                          DataCell(Text(lead.name)),
-                          DataCell(Text(lead.company ?? '-')),
-                          DataCell(Text(lead.email ?? '-')),
-                          DataCell(Text(Formatters.formatCurrency(lead.value))),
-                          DataCell(StatusBadge(status: lead.stage, compact: true)),
-                          DataCell(Row(children: [
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert, size: 18),
-                              onSelected: (stage) async {
-                                await ref.read(dataServiceProvider)?.updateLeadStage(lead.id, stage);
-                                ref.invalidate(leadsProvider);
-                              },
-                              itemBuilder: (_) => const [
-                                PopupMenuItem(value: 'new', child: Text('New')),
-                                PopupMenuItem(value: 'contacted', child: Text('Contacted')),
-                                PopupMenuItem(value: 'proposal', child: Text('Proposal')),
-                                PopupMenuItem(value: 'negotiation', child: Text('Negotiation')),
-                                PopupMenuItem(value: 'won', child: Text('Won')),
-                                PopupMenuItem(value: 'lost', child: Text('Lost')),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                              onPressed: () async {
-                                await ref.read(dataServiceProvider)?.deleteLead(lead.id);
-                                ref.invalidate(leadsProvider);
-                              },
-                            ),
-                          ])),
-                        ]);
-                      }).toList(),
-                    ),
+                    );
+
+                Widget deleteBtn(LeadModel lead) => IconButton(
+                      icon: const Icon(Icons.delete, size: 18, color: Colors.red),
+                      onPressed: () async {
+                        await ref.read(dataServiceProvider)?.deleteLead(lead.id);
+                        ref.invalidate(leadsProvider);
+                      },
+                    );
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Name')),
+                      DataColumn(label: Text('Company')),
+                      DataColumn(label: Text('Email')),
+                      DataColumn(label: Text('Value')),
+                      DataColumn(label: Text('Stage')),
+                      DataColumn(label: Text('Actions')),
+                    ],
+                    rows: leads.map((lead) {
+                      return DataRow(cells: [
+                        DataCell(Text(lead.name)),
+                        DataCell(Text(lead.company ?? '-')),
+                        DataCell(Text(lead.email ?? '-')),
+                        DataCell(Text(Formatters.formatCurrency(lead.value))),
+                        DataCell(StatusBadge(status: lead.stage, compact: true)),
+                        DataCell(Row(children: [stageMenu(lead), deleteBtn(lead)])),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: leads.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final lead = leads[index];
+                      return MobileRecordTile(
+                        title: lead.name,
+                        subtitle: [
+                          if (lead.company != null && lead.company!.isNotEmpty) lead.company!,
+                          if (lead.email != null && lead.email!.isNotEmpty) lead.email!,
+                          Formatters.formatCurrency(lead.value),
+                        ].join(' · '),
+                        badge: StatusBadge(status: lead.stage, compact: true),
+                        actions: [stageMenu(lead), deleteBtn(lead)],
+                      );
+                    },
                   ),
                 );
               },
@@ -109,15 +125,16 @@ class LeadsScreen extends ConsumerWidget {
     final emailController = TextEditingController();
     final companyController = TextEditingController();
     final valueController = TextEditingController();
-    var stage = 'new';
+    var stage = 'contacted';
 
     await showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           title: const Text('Add Lead'),
-          content: SizedBox(
-            width: 400,
+          content: responsiveDialogBody(
+            ctx,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -137,12 +154,12 @@ class LeadsScreen extends ConsumerWidget {
                   value: stage,
                   decoration: const InputDecoration(labelText: 'Stage'),
                   items: const [
-                    DropdownMenuItem(value: 'new', child: Text('New')),
                     DropdownMenuItem(value: 'contacted', child: Text('Contacted')),
-                    DropdownMenuItem(value: 'proposal', child: Text('Proposal Sent')),
                     DropdownMenuItem(value: 'negotiation', child: Text('Negotiation')),
+                    DropdownMenuItem(value: 'won', child: Text('Won')),
+                    DropdownMenuItem(value: 'lost', child: Text('Lost')),
                   ],
-                  onChanged: (v) => setState(() => stage = v ?? 'new'),
+                  onChanged: (v) => setState(() => stage = v ?? 'contacted'),
                 ),
               ],
             ),

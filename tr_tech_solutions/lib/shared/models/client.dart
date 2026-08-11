@@ -24,17 +24,21 @@ class ClientModel {
   });
 
   factory ClientModel.fromJson(Map<String, dynamic> json) {
+    final company = json['company'] ?? json['contact_person'];
+    final createdRaw = json['created_at'] ?? json['createdAt'];
     return ClientModel(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String?,
-      phone: json['phone'] as String?,
-      company: json['company'] as String?,
-      address: json['address'] as String?,
-      status: json['status'] as String? ?? 'active',
-      notes: json['notes'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      id: json['id']?.toString() ?? '',
+      userId: (json['user_id'] ?? json['userId'] ?? '').toString(),
+      name: (json['name'] ?? json['client_name'] ?? 'Unnamed').toString(),
+      email: json['email']?.toString(),
+      phone: json['phone']?.toString(),
+      company: company?.toString(),
+      address: json['address']?.toString(),
+      status: (json['status'] as String?) ?? 'active',
+      notes: json['notes']?.toString(),
+      createdAt: createdRaw != null
+          ? (DateTime.tryParse(createdRaw.toString()) ?? DateTime.now())
+          : DateTime.now(),
     );
   }
 

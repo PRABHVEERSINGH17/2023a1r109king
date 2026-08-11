@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/shared/models/client.dart';
 import 'package:tr_tech_solutions/shared/models/dashboard_stats.dart';
 import 'package:tr_tech_solutions/shared/models/invoice.dart';
@@ -10,6 +11,8 @@ import 'package:tr_tech_solutions/shared/models/project.dart';
 import 'package:tr_tech_solutions/shared/models/service.dart';
 import 'package:tr_tech_solutions/shared/models/ticket.dart';
 import 'package:tr_tech_solutions/shared/services/app_repository.dart';
+import 'package:tr_tech_solutions/shared/services/client_bootstrap.dart';
+import 'package:tr_tech_solutions/shared/services/demo_persistence.dart';
 import 'package:tr_tech_solutions/shared/services/demo_repository.dart';
 
 class SupabaseRepository implements AppRepository {
@@ -67,14 +70,23 @@ class SupabaseRepository implements AppRepository {
   Future<List<ClientModel>> getClients() async {
     final response =
         await _client.from('clients').select().order('created_at', ascending: false);
-    return (response as List).map((e) => ClientModel.fromJson(e)).toList();
+    return (response as List)
+        .map((e) => ClientModel.fromJson(Map<String, dynamic>.from(e as Map)))
+        .where((c) => c.id.isNotEmpty && c.name.isNotEmpty)
+        .toList();
   }
 
   @override
   Future<ClientModel> createClient(Map<String, dynamic> data) async {
+    final bootstrap = data.remove('bootstrap_related') as bool? ?? true;
     data['user_id'] = _userId;
     final response = await _client.from('clients').insert(data).select().single();
-    return ClientModel.fromJson(response);
+    final client = ClientModel.fromJson(response);
+    if (bootstrap) {
+      // Always attempt linked records; individual failures are handled inside.
+      await bootstrapRelatedRecordsForClient(this, client);
+    }
+    return client;
   }
 
   @override
@@ -235,11 +247,31 @@ class SupabaseRepository implements AppRepository {
   }
 }
 
-final demoRepositoryProvider = Provider<DemoRepository>((ref) => DemoRepository());
+final demoWorkspaceVersionProvider = StateProvider<int>((ref) => 0);
+
+final demoRepositoryProvider = Provider<DemoRepository>((ref) {
+  // Bumping demoWorkspaceVersionProvider recreates the workspace (reset).
+  ref.watch(demoWorkspaceVersionProvider);
+
+  final snapshot = DemoPersistence.workspace;
+  final repo = DemoRepository(snapshot: snapshot);
+  repo.bindPersistence(DemoPersistence.saveWorkspace);
+
+  // Persist the initial seed so a refresh keeps the same workspace baseline.
+  if (snapshot == null) {
+    // ignore: unawaited_futures
+    DemoPersistence.saveWorkspace(repo.exportSnapshot());
+  }
+
+  ref.keepAlive();
+  return repo;
+});
 
 final appRepositoryProvider = Provider<AppRepository>((ref) {
   final isDemo = ref.watch(demoModeProvider);
-  if (isDemo || !SupabaseConfig.isConfigured) {
+  final isLocal = ref.watch(localAuthProvider);
+  // Demo + device-local accounts use the on-device CRM workspace.
+  if (isDemo || isLocal || !SupabaseConfig.isConfigured) {
     return ref.watch(demoRepositoryProvider);
   }
   return SupabaseRepository(Supabase.instance.client);

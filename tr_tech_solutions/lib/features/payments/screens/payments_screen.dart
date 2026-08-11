@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tr_tech_solutions/core/theme/app_breakpoints.dart';
 import 'package:tr_tech_solutions/core/utils/formatters.dart';
+import 'package:tr_tech_solutions/features/clients/widgets/linked_create_dialogs.dart';
 import 'package:tr_tech_solutions/shared/services/data_service.dart';
 import 'package:tr_tech_solutions/shared/widgets/empty_state.dart';
 import 'package:tr_tech_solutions/shared/widgets/page_header.dart';
+import 'package:tr_tech_solutions/shared/widgets/responsive_record_list.dart';
 
 final paymentsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final service = ref.watch(dataServiceProvider);
@@ -19,7 +22,7 @@ class PaymentsScreen extends ConsumerWidget {
     final paymentsAsync = ref.watch(paymentsProvider);
 
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: AppBreakpoints.pagePadding(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -27,7 +30,7 @@ class PaymentsScreen extends ConsumerWidget {
             title: 'Payments',
             subtitle: 'Track received payments',
             action: ElevatedButton.icon(
-              onPressed: () => _showPaymentDialog(context, ref),
+              onPressed: () => showLinkedPaymentDialog(context, ref),
               icon: const Icon(Icons.add, size: 18),
               label: const Text('Record Payment'),
             ),
@@ -43,99 +46,55 @@ class PaymentsScreen extends ConsumerWidget {
                     icon: Icons.payment_outlined,
                     title: 'No payments recorded',
                     actionLabel: 'Record Payment',
-                    onAction: () => _showPaymentDialog(context, ref),
+                    onAction: () => showLinkedPaymentDialog(context, ref),
                   );
                 }
-                return DataListCard(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('Amount')),
-                        DataColumn(label: Text('Method')),
-                        DataColumn(label: Text('Client')),
-                        DataColumn(label: Text('Reference')),
-                        DataColumn(label: Text('Date')),
-                      ],
-                      rows: payments.map((p) {
-                        final clientName = p['clients'] != null
-                            ? (p['clients'] as Map)['name'] as String?
-                            : null;
-                        return DataRow(cells: [
-                          DataCell(Text(Formatters.formatCurrency((p['amount'] as num).toDouble()))),
-                          DataCell(Text(p['method'] as String? ?? '-')),
-                          DataCell(Text(clientName ?? '-')),
-                          DataCell(Text(p['reference'] as String? ?? '-')),
-                          DataCell(Text(Formatters.formatDate(
-                              p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null))),
-                        ]);
-                      }).toList(),
-                    ),
+
+                String? clientNameOf(Map<String, dynamic> p) => p['clients'] != null
+                    ? (p['clients'] as Map)['name'] as String?
+                    : null;
+
+                return ResponsiveRecordList(
+                  table: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Amount')),
+                      DataColumn(label: Text('Method')),
+                      DataColumn(label: Text('Client')),
+                      DataColumn(label: Text('Reference')),
+                      DataColumn(label: Text('Date')),
+                    ],
+                    rows: payments.map((p) {
+                      return DataRow(cells: [
+                        DataCell(Text(Formatters.formatCurrency((p['amount'] as num).toDouble()))),
+                        DataCell(Text(p['method'] as String? ?? '-')),
+                        DataCell(Text(clientNameOf(p) ?? '-')),
+                        DataCell(Text(p['reference'] as String? ?? '-')),
+                        DataCell(Text(Formatters.formatDate(
+                            p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null))),
+                      ]);
+                    }).toList(),
+                  ),
+                  list: ListView.separated(
+                    itemCount: payments.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final p = payments[index];
+                      final amount = Formatters.formatCurrency((p['amount'] as num).toDouble());
+                      final method = p['method'] as String? ?? '-';
+                      final refText = p['reference'] as String? ?? '-';
+                      final date = Formatters.formatDate(
+                          p['paid_at'] != null ? DateTime.parse(p['paid_at'] as String) : null);
+                      return MobileRecordTile(
+                        title: amount,
+                        subtitle: '${clientNameOf(p) ?? 'No client'} · $method · $refText · $date',
+                      );
+                    },
                   ),
                 );
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Future<void> _showPaymentDialog(BuildContext context, WidgetRef ref) async {
-    final amountController = TextEditingController();
-    final referenceController = TextEditingController();
-    var method = 'bank_transfer';
-
-    await showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
-          title: const Text('Record Payment'),
-          content: SizedBox(
-            width: 400,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Amount *', prefixText: '₹ '),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  value: method,
-                  decoration: const InputDecoration(labelText: 'Method'),
-                  items: const [
-                    DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer')),
-                    DropdownMenuItem(value: 'upi', child: Text('UPI')),
-                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                    DropdownMenuItem(value: 'card', child: Text('Card')),
-                    DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
-                  ],
-                  onChanged: (v) => setState(() => method = v ?? 'bank_transfer'),
-                ),
-                const SizedBox(height: 12),
-                TextField(controller: referenceController, decoration: const InputDecoration(labelText: 'Reference')),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-            ElevatedButton(
-              onPressed: () async {
-                if (amountController.text.isEmpty) return;
-                await ref.read(dataServiceProvider)?.createPayment({
-                  'amount': double.tryParse(amountController.text) ?? 0,
-                  'method': method,
-                  'reference': referenceController.text.trim().isEmpty ? null : referenceController.text.trim(),
-                });
-                ref.invalidate(paymentsProvider);
-                if (ctx.mounted) Navigator.pop(ctx);
-              },
-              child: const Text('Record'),
-            ),
-          ],
-        ),
       ),
     );
   }
