@@ -136,9 +136,15 @@ Future<ClientBootstrapResult> ensureClientRelatedRecords(
       (await repo.getInvoices()).where((i) => i.clientId == client.id).toList();
   final tickets =
       (await repo.getTickets()).where((t) => t.clientId == client.id).toList();
-  final payments = (await repo.getPayments())
-      .where((p) => p['client_id']?.toString() == client.id)
-      .toList();
+  final payments = await () async {
+    try {
+      return (await repo.getPayments())
+          .where((p) => p['client_id']?.toString() == client.id)
+          .toList();
+    } catch (_) {
+      return <Map<String, dynamic>>[];
+    }
+  }();
 
   // Fully empty → create the full starter pack.
   if (leads.isEmpty &&

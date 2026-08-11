@@ -237,6 +237,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: const Text('Create Account'),
               ),
             ),
+            const SizedBox(height: 16),
+            Text(
+              'Google login needs Google enabled in Supabase first. Use Create Account with email for now.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 12,
+                height: 1.35,
+                fontFamily: AppTypography.body,
+              ),
+            ),
           ],
         ),
       ),

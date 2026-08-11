@@ -22,6 +22,35 @@ class SupabaseRepository implements AppRepository {
 
   String? get _userId => _client.auth.currentUser?.id;
 
+  Future<Map<String, String>> _clientNamesById() async {
+    try {
+      final rows = await _client.from('clients').select('id, name');
+      final map = <String, String>{};
+      for (final row in (rows as List)) {
+        final id = row['id']?.toString();
+        final name = row['name']?.toString();
+        if (id != null && name != null && name.isNotEmpty) {
+          map[id] = name;
+        }
+      }
+      return map;
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> _withClientName(
+    Map<String, dynamic> row,
+    Map<String, String> names,
+  ) {
+    final out = Map<String, dynamic>.from(row);
+    final clientId = out['client_id']?.toString();
+    if (clientId != null && names.containsKey(clientId)) {
+      out['clients'] = {'name': names[clientId]};
+    }
+    return out;
+  }
+
   @override
   Future<DashboardStats> getDashboardStats() async {
     final userId = _userId;
@@ -103,11 +132,12 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<List<ServiceModel>> getServices() async {
-    final response = await _client
-        .from('services')
-        .select('*, clients(name)')
-        .order('expiry_date', ascending: true);
-    return (response as List).map((e) => ServiceModel.fromJson(e)).toList();
+    final names = await _clientNamesById();
+    final response =
+        await _client.from('services').select('*').order('expiry_date', ascending: true);
+    return (response as List)
+        .map((e) => ServiceModel.fromJson(_withClientName(Map<String, dynamic>.from(e as Map), names)))
+        .toList();
   }
 
   @override
@@ -124,11 +154,12 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<List<InvoiceModel>> getInvoices() async {
-    final response = await _client
-        .from('invoices')
-        .select('*, clients(name)')
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => InvoiceModel.fromJson(e)).toList();
+    final names = await _clientNamesById();
+    final response =
+        await _client.from('invoices').select('*').order('created_at', ascending: false);
+    return (response as List)
+        .map((e) => InvoiceModel.fromJson(_withClientName(Map<String, dynamic>.from(e as Map), names)))
+        .toList();
   }
 
   @override
@@ -169,11 +200,12 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<List<ProjectModel>> getProjects() async {
-    final response = await _client
-        .from('projects')
-        .select('*, clients(name)')
-        .order('created_at', ascending: false);
-    return (response as List).map((e) => ProjectModel.fromJson(e)).toList();
+    final names = await _clientNamesById();
+    final response =
+        await _client.from('projects').select('*').order('created_at', ascending: false);
+    return (response as List)
+        .map((e) => ProjectModel.fromJson(_withClientName(Map<String, dynamic>.from(e as Map), names)))
+        .toList();
   }
 
   @override
@@ -191,11 +223,12 @@ class SupabaseRepository implements AppRepository {
   @override
   Future<List<TicketModel>> getTickets() async {
     try {
-      final response = await _client
-          .from('tickets')
-          .select('*, clients(name)')
-          .order('created_at', ascending: false);
-      return (response as List).map((e) => TicketModel.fromJson(e)).toList();
+      final names = await _clientNamesById();
+      final response =
+          await _client.from('tickets').select('*').order('created_at', ascending: false);
+      return (response as List)
+          .map((e) => TicketModel.fromJson(_withClientName(Map<String, dynamic>.from(e as Map), names)))
+          .toList();
     } catch (_) {
       return [];
     }
@@ -233,11 +266,12 @@ class SupabaseRepository implements AppRepository {
 
   @override
   Future<List<Map<String, dynamic>>> getPayments() async {
-    final response = await _client
-        .from('payments')
-        .select('*, clients(name), invoices(invoice_number)')
-        .order('paid_at', ascending: false);
-    return List<Map<String, dynamic>>.from(response);
+    final names = await _clientNamesById();
+    final response =
+        await _client.from('payments').select('*').order('paid_at', ascending: false);
+    return (response as List)
+        .map((e) => _withClientName(Map<String, dynamic>.from(e as Map), names))
+        .toList();
   }
 
   @override
