@@ -14,6 +14,27 @@ import 'package:tr_tech_solutions/shared/services/local_account_store.dart';
 const kDemoEmail = 'admin@trtechsolutions.com';
 const kDemoPassword = 'demo1234';
 
+/// Thrown when live cloud auth cannot complete until Supabase is configured.
+class LiveAuthSetupException implements Exception {
+  final String title;
+  final String steps;
+
+  const LiveAuthSetupException({
+    required this.title,
+    required this.steps,
+  });
+
+  @override
+  String toString() => '$title\n\n$steps';
+}
+
+const kLiveEmailConfirmSteps =
+    'Open Supabase Dashboard → project izpxnkovciqjotfbofkc\n'
+    '1. Authentication → Providers → Email\n'
+    '2. Turn OFF "Confirm email" → Save\n'
+    '3. Come back here and Sign Up again with a real email\n\n'
+    'This one setting makes the app fully live (no Google Client ID needed).';
+
 enum SocialAuthProvider { google, apple, linkedin }
 
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -92,9 +113,13 @@ class AuthService {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
-    // Built-in demo account always works.
-    if (_isDemoCredentials(email, password)) {
+  Future<void> signIn(
+    String email,
+    String password, {
+    bool requireCloud = false,
+  }) async {
+    // Built-in demo account always works (unless forcing live cloud).
+    if (!requireCloud && _isDemoCredentials(email, password)) {
       await enterDemoMode(resetWorkspace: false);
       return;
     }
@@ -115,28 +140,53 @@ class AuthService {
         if (Supabase.instance.client.auth.currentSession != null) {
           return;
         }
+        if (requireCloud) {
+          throw const LiveAuthSetupException(
+            title: 'Live sign-in needs email confirmation turned off',
+            steps: kLiveEmailConfirmSteps,
+          );
+        }
       } catch (e) {
-        final msg = e.toString().toLowerCase();
-        // Fall through to local accounts for common cloud blockers.
-        final canFallback = msg.contains('invalid') ||
-            msg.contains('email not confirmed') ||
-            msg.contains('confirm') ||
-            msg.contains('failed host lookup') ||
-            msg.contains('socket') ||
-            msg.contains('timeout') ||
-            msg.contains('oauth');
-        if (!canFallback) {
-          // Still try local before giving up.
+        if (requireCloud) {
+          final msg = e.toString().toLowerCase();
+          if (e is LiveAuthSetupException) rethrow;
+          if (msg.contains('email not confirmed') ||
+              msg.contains('confirm') ||
+              msg.contains('rate limit') ||
+              msg.contains('over_email')) {
+            throw const LiveAuthSetupException(
+              title: 'Live login is blocked by Supabase email settings',
+              steps: kLiveEmailConfirmSteps,
+            );
+          }
+          rethrow;
         }
       }
+    } else if (requireCloud) {
+      throw const LiveAuthSetupException(
+        title: 'Supabase is not configured',
+        steps: 'Add SUPABASE_URL and SUPABASE_ANON_KEY in assets/supabase.env',
+      );
     }
 
-    // 2) Device-local account (always works offline).
+    if (requireCloud) {
+      throw const LiveAuthSetupException(
+        title: 'Could not create a live session',
+        steps: kLiveEmailConfirmSteps,
+      );
+    }
+
+    // 2) Device-local account (offline / fallback).
     await LocalAccountStore.signIn(email: email, password: password);
     await _activateLocalSession();
   }
 
-  Future<void> signUp(String email, String password, String fullName) async {
+  Future<void> signUp(
+    String email,
+    String password,
+    String fullName, {
+    bool requireCloud = true,
+  }) async {
     Object? cloudError;
 
     if (SupabaseConfig.isConfigured) {
@@ -156,14 +206,37 @@ class AuthService {
           await LocalAccountStore.clearSession();
           return;
         }
-        // Email confirmation required — still create a usable local session.
-        cloudError = StateError('email_confirmation_required');
+        // No session = Confirm email is still ON (or rate limited).
+        cloudError = const LiveAuthSetupException(
+          title: 'Account created in Supabase, but Confirm email is still ON',
+          steps: kLiveEmailConfirmSteps,
+        );
       } catch (e) {
         cloudError = e;
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('rate limit') || msg.contains('over_email')) {
+          cloudError = const LiveAuthSetupException(
+            title: 'Supabase email rate limit hit',
+            steps: kLiveEmailConfirmSteps,
+          );
+        }
       }
+    } else if (requireCloud) {
+      throw const LiveAuthSetupException(
+        title: 'Supabase is not configured',
+        steps: 'Add SUPABASE_URL and SUPABASE_ANON_KEY in assets/supabase.env',
+      );
     }
 
-    // Always create a local account so the user can enter the app.
+    if (requireCloud) {
+      if (cloudError is LiveAuthSetupException) throw cloudError;
+      throw LiveAuthSetupException(
+        title: 'Live Sign Up failed',
+        steps: '${cloudError ?? "Unknown error"}\n\n$kLiveEmailConfirmSteps',
+      );
+    }
+
+    // Offline fallback only when cloud is not required.
     try {
       await LocalAccountStore.signUp(
         email: email,
@@ -171,7 +244,6 @@ class AuthService {
         fullName: fullName,
       );
     } catch (e) {
-      // If local account exists, try signing in instead.
       final msg = e.toString().toLowerCase();
       if (msg.contains('already exists')) {
         await LocalAccountStore.signIn(email: email, password: password);

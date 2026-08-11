@@ -63,30 +63,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref.read(authServiceProvider).signIn(
             _emailController.text.trim(),
             _passwordController.text,
+            requireCloud: _onlineMode,
           );
       if (mounted) context.go('/dashboard');
     } catch (e) {
-      if (mounted) {
-        final message = e.toString().toLowerCase();
-        final isInvalid = message.contains('invalid') ||
-            message.contains('credentials') ||
-            message.contains('email not confirmed');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              isInvalid
-                  ? 'Invalid credentials. Use Sign Up first, or continue in Demo Mode.'
-                  : 'Login failed: $e',
-            ),
-            action: SnackBarAction(
-              label: 'Demo Mode',
-              textColor: AppColors.primaryLight,
-              onPressed: _enterDemo,
-            ),
+      if (!mounted) return;
+      if (e is LiveAuthSetupException) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(e.title),
+            content: Text(e.steps),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _enterDemo();
+                },
+                child: const Text('Demo Mode'),
+              ),
+            ],
           ),
         );
+        return;
       }
+      final message = e.toString().toLowerCase();
+      final isInvalid = message.contains('invalid') ||
+          message.contains('credentials') ||
+          message.contains('email not confirmed');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isInvalid
+                ? (_onlineMode
+                    ? 'Invalid credentials. Create Online Account first, or turn OFF Confirm email in Supabase.'
+                    : 'Invalid credentials. Use Sign Up first, or continue in Demo Mode.')
+                : 'Login failed: $e',
+          ),
+          action: SnackBarAction(
+            label: 'Demo Mode',
+            textColor: AppColors.primaryLight,
+            onPressed: _enterDemo,
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -199,7 +221,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               child: Text(
                 _onlineMode
-                    ? 'Sign Up with any email + password (min 6 chars).\nWorks on this device immediately. Cloud sync needs Supabase confirm-email off (see AUTH.md).'
+                    ? 'LIVE mode: Sign Up with a real email after turning OFF Confirm email in Supabase (LIVE_APP.md).\nNo Google Client ID needed.'
                     : (SupabaseConfig.isConfigured
                         ? 'Demo: admin@trtechsolutions.com / demo1234\nOr Sign Up with your email — Sign In works after that.'
                         : 'Sign Up with your email, or use Demo Mode to explore sample data.'),

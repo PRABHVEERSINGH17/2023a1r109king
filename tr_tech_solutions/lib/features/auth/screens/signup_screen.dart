@@ -37,20 +37,42 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             _emailController.text.trim(),
             _passwordController.text,
             _nameController.text.trim(),
+            requireCloud: true,
           );
 
       if (mounted) {
         context.go('/dashboard');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account ready — you are signed in')),
+          const SnackBar(content: Text('Live account ready — signed in to Supabase')),
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Signup failed: ${e.toString()}')),
+      if (!mounted) return;
+      if (e is LiveAuthSetupException) {
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(e.title),
+            content: SingleChildScrollView(child: Text(e.steps)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await ref.read(authServiceProvider).enterDemoMode();
+                  if (!context.mounted) return;
+                  context.go('/dashboard');
+                },
+                child: const Text('Demo Mode'),
+              ),
+            ],
+          ),
         );
+        return;
       }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Signup failed: $e')),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -98,7 +120,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Join TR Technology Solutions and start managing your business.',
+                          'Create a LIVE cloud account on Supabase. '
+                          'First turn OFF Confirm email in the Supabase dashboard (see LIVE_APP.md).',
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                         const SizedBox(height: 24),
