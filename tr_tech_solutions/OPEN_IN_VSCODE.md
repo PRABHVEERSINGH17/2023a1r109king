@@ -1,71 +1,54 @@
-# Open this project in Visual Studio Code
+# Open in Visual Studio Code
 
-## 1. Install required tools
-
-1. [Visual Studio Code](https://code.visualstudio.com/)
-2. [Flutter SDK](https://docs.flutter.dev/get-started/install)
-3. In VS Code, install these extensions when prompted:
-   - **Dart**
-   - **Flutter**
-
-## 2. Get the code
-
-### Option A — Clone from GitHub
+## Quick start
 
 ```bash
 git clone https://github.com/PRABHVEERSINGH17/2023a1r109king.git
 cd 2023a1r109king
-git checkout cursor/tr-tech-demo-mode-2b7a
+git checkout cursor/fix-vscode-env-error-2b7a
 code tr_tech_solutions
 ```
 
-### Option B — Open folder already on your PC
+Or: **File → Open Folder…** → select `tr_tech_solutions`
 
-In VS Code:
+## First time setup
 
-**File → Open Folder…** → select `tr_tech_solutions`
-
-## 3. Add your Supabase keys
-
-Create file `assets/.env` inside `tr_tech_solutions`:
-
-```env
-SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
-SUPABASE_ANON_KEY=paste-your-anon-key-here
-```
-
-## 4. Install packages
-
-In VS Code terminal (`Ctrl + `` `):
+1. Install extensions when prompted: **Dart** + **Flutter**
+2. Open VS Code terminal (`Ctrl + `` `) and run:
 
 ```bash
 flutter pub get
 ```
 
-## 5. Run the app
+3. Press **F5** and choose **TR Tech (Chrome)**
 
-1. Press **F5**, or
-2. Click **Run → Start Debugging**, or
-3. Choose **TR Tech (Chrome)** from the Run and Debug panel
+## Supabase config (already set)
 
-Or in terminal:
+Credentials are in:
 
-```bash
-flutter run -d chrome
+`assets/supabase.env`
+
+```env
+SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
+SUPABASE_ANON_KEY=...
 ```
 
-## 6. Login
+No need to create `assets/.env` anymore.
+
+## Login
 
 - Click **Explore Demo Dashboard**, or
-- Sign up / sign in with your email (Supabase auth)
+- Sign Up / Sign In with your email
 
-## Project location
+## If you get an old error about assets/.env
 
-```
-tr_tech_solutions/
-├── lib/                  ← all Flutter source code
-├── supabase/             ← SQL schema files
-├── assets/.env           ← your Supabase keys (create this)
-├── pubspec.yaml
-└── .vscode/              ← VS Code run configs
+You are on an old branch. Update:
+
+```bash
+git fetch origin
+git checkout cursor/fix-vscode-env-error-2b7a
+git pull
+flutter clean
+flutter pub get
+flutter run -d chrome
 ```

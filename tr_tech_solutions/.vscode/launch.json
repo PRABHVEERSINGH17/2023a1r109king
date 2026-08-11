@@ -6,34 +6,40 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "deviceId": "chrome"
+      "args": [],
+      "deviceId": "chrome",
+      "cwd": "${workspaceFolder}"
     },
     {
       "name": "TR Tech (Edge)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "deviceId": "edge"
+      "deviceId": "edge",
+      "cwd": "${workspaceFolder}"
     },
     {
-      "name": "TR Tech (Windows/Linux/macOS)",
-      "request": "launch",
-      "type": "dart",
-      "program": "lib/main.dart"
-    },
-    {
-      "name": "TR Tech (Profile mode)",
+      "name": "TR Tech (Default Device)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "flutterMode": "profile"
+      "cwd": "${workspaceFolder}"
     },
     {
-      "name": "TR Tech (Release mode)",
+      "name": "TR Tech (Profile)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "flutterMode": "release"
+      "flutterMode": "profile",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "TR Tech (Release)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "release",
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

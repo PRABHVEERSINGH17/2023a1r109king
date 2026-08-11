@@ -14,5 +14,9 @@
   "files.exclude": {
     "**/.dart_tool": true,
     "**/build": true
+  },
+  "files.associations": {
+    "*.env": "dotenv",
+    "supabase.env": "dotenv"
   }
 }

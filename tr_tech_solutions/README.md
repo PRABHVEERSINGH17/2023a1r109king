@@ -38,10 +38,10 @@ The app ships with full sample data (clients, invoices, leads, services, tickets
 
 ## Connect your Supabase backend
 
-Credentials go in `assets/.env` (gitignored):
+Credentials are in `assets/supabase.env`:
 
 ```env
-SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_URL=https://izpxnkovciqjotfbofkc.supabase.co
 SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
