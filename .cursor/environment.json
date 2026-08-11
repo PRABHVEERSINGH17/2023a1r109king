@@ -1,0 +1,32 @@
+{
+  "name": "TR Tech Solutions Monorepo",
+  "user": "ubuntu",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "install": "./scripts/cloud-agent-install.sh",
+  "start": "./scripts/cloud-agent-start.sh",
+  "ports": [
+    {
+      "name": "TR Tech CRM (Flutter web)",
+      "port": 8080
+    },
+    {
+      "name": "College FAQ Chatbot API",
+      "port": 8000
+    }
+  ],
+  "terminals": [
+    {
+      "name": "tr-tech-crm",
+      "command": "cd tr_tech_solutions && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080",
+      "description": "Flutter web dev server for the TR Tech CRM (demo mode works offline)"
+    },
+    {
+      "name": "college-faq",
+      "command": "cd college-faq-chatbot/backend && source .venv/bin/activate && uvicorn app.main:app --host 0.0.0.0 --port 8000",
+      "description": "FastAPI server for the College FAQ Chatbot at http://localhost:8000"
+    }
+  ]
+}
