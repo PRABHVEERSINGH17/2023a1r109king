@@ -199,10 +199,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               child: Text(
                 _onlineMode
-                    ? 'Create an account with your email — Sign Up works on this device even if cloud email is blocked.\nGoogle/Apple/LinkedIn need Supabase providers enabled.'
+                    ? 'Sign Up with any email + password (min 6 chars).\nWorks on this device immediately. Cloud sync needs Supabase confirm-email off (see AUTH.md).'
                     : (SupabaseConfig.isConfigured
-                        ? 'Demo: admin@trtechsolutions.com / demo1234\nOr continue with Demo Mode instantly.'
-                        : 'Demo Mode is ready — explore the full workspace with sample data.'),
+                        ? 'Demo: admin@trtechsolutions.com / demo1234\nOr Sign Up with your email — Sign In works after that.'
+                        : 'Sign Up with your email, or use Demo Mode to explore sample data.'),
                 style: const TextStyle(
                   color: AppColors.brand,
                   fontSize: 12,

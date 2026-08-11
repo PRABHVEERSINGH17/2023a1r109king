@@ -11,7 +11,17 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Tap **Continue with Demo Mode**.
+Tap **Continue with Demo Mode**, or create an account (see **`AUTH.md`**).
+
+### Authentication
+
+| Method | How |
+|--------|-----|
+| Demo Mode | Tap **Continue with Demo Mode** |
+| Demo login | `admin@trtechsolutions.com` / `demo1234` |
+| Your account | **Sign Up** with email + password, then **Sign In** |
+
+Full details: **`AUTH.md`**.
 
 ## Android phone APK
 

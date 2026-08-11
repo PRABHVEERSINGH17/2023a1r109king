@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tr_tech_solutions/core/config/supabase_config.dart';
 import 'package:tr_tech_solutions/core/providers/app_mode_provider.dart';
+import 'package:tr_tech_solutions/core/providers/local_auth_provider.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 import 'package:tr_tech_solutions/features/auth/screens/login_screen.dart';
 import 'package:tr_tech_solutions/features/auth/screens/signup_screen.dart';
@@ -43,10 +44,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final isDemo = ref.read(demoModeProvider);
+      final isLocal = ref.read(localAuthProvider);
       final authState = ref.read(authStateProvider);
       final streamSession = authState.valueOrNull?.session != null;
       final supabaseLoggedIn = _hasSupabaseSession() || streamSession;
-      final isLoggedIn = isDemo || supabaseLoggedIn;
+      // Demo, device-local account, or cloud Supabase session all count.
+      final isLoggedIn = isDemo || isLocal || supabaseLoggedIn;
       final isAuthRoute =
           state.matchedLocation == '/login' || state.matchedLocation == '/signup';
 
@@ -87,6 +90,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(Ref ref) {
     ref.listen(demoModeProvider, (_, __) => notifyListeners());
+    ref.listen(localAuthProvider, (_, __) => notifyListeners());
     ref.listen(authStateProvider, (_, __) => notifyListeners());
     if (SupabaseConfig.isConfigured) {
       try {
