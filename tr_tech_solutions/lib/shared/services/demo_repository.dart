@@ -471,8 +471,20 @@ class DemoRepository implements AppRepository {
     ];
 
     _payments = [
+      for (var i = 0; i < 12; i++)
+        {
+          'id': 'pay-m$i',
+          'amount': 45000.0 + (i * 8500) + ((i % 3) * 12000),
+          'method': i.isEven ? 'upi' : 'bank_transfer',
+          'reference': 'TXN-${1000 + i}',
+          'paid_at': DateTime(now.year, now.month - (11 - i), 12 + (i % 10)).toIso8601String(),
+          'clients': {
+            'name': ['Acme Corporation', 'TechStart India', 'Global Softwares', 'Bright Future Schools'][i % 4],
+          },
+          'invoices': {'invoice_number': 'INV-${1000 + i}'},
+        },
       {
-        'id': 'pay1',
+        'id': 'pay-extra1',
         'amount': 53100.0,
         'method': 'bank_transfer',
         'reference': 'NEFT-882341',
@@ -481,16 +493,7 @@ class DemoRepository implements AppRepository {
         'invoices': {'invoice_number': 'INV-1042'},
       },
       {
-        'id': 'pay2',
-        'amount': 14160.0,
-        'method': 'upi',
-        'reference': 'UPI-991122',
-        'paid_at': now.subtract(const Duration(days: 55)).toIso8601String(),
-        'clients': {'name': 'Acme Corporation'},
-        'invoices': {'invoice_number': 'INV-1041'},
-      },
-      {
-        'id': 'pay3',
+        'id': 'pay-extra2',
         'amount': 25000.0,
         'method': 'upi',
         'reference': 'UPI-445566',

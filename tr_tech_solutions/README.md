@@ -95,7 +95,9 @@ supabase/
 | Navigation | GoRouter |
 | Charts | fl_chart |
 | Backend | Supabase (PostgreSQL + Auth + RLS) |
-| Fonts | Google Fonts (Inter) |
+| Fonts | Material / platform fonts |
+| Android ID | `com.trtechsolutions.app` |
+| Release | Google Play AAB (`PLAY_STORE.md`) |
 
 ## Security
 

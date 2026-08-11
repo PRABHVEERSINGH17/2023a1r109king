@@ -38,8 +38,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) context.go('/dashboard');
     } catch (e) {
       if (mounted) {
+        final message = e.toString().toLowerCase();
+        final isInvalid = message.contains('invalid') ||
+            message.contains('credentials') ||
+            message.contains('email not confirmed');
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: ${e.toString()}')),
+          SnackBar(
+            content: Text(
+              isInvalid
+                  ? 'Invalid credentials. Use Sign Up first, or click Continue with Demo Mode.'
+                  : 'Login failed: $e',
+            ),
+            action: SnackBarAction(
+              label: 'Demo Mode',
+              onPressed: _enterDemo,
+            ),
+          ),
         );
       }
     } finally {
@@ -129,27 +144,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              Text(
-                SupabaseConfig.isConfigured
-                    ? 'Welcome back! Please sign in to continue.'
-                    : 'Demo mode ready — click below to explore the full app.',
-                style: const TextStyle(color: AppColors.textSecondary),
+              const Text(
+                'Use demo login below, or sign up with your own email for Supabase.',
+                style: TextStyle(color: AppColors.textSecondary),
               ),
-              if (!SupabaseConfig.isConfigured) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.info.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.info.withOpacity(0.3)),
-                  ),
-                  child: const Text(
-                    'Running with demo data. Add Supabase credentials in assets/.env to connect your backend.',
-                    style: TextStyle(color: AppColors.info, fontSize: 12),
-                  ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.info.withOpacity(0.3)),
                 ),
-              ],
+                child: Text(
+                  SupabaseConfig.isConfigured
+                      ? 'Demo login: admin@trtechsolutions.com / demo1234\nOr click Continue with Demo Mode.'
+                      : 'Demo mode ready. Click Continue with Demo Mode.',
+                  style: const TextStyle(color: AppColors.info, fontSize: 12),
+                ),
+              ),
               const SizedBox(height: 24),
               TextFormField(
                 controller: _emailController,
@@ -191,21 +204,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : Text(SupabaseConfig.isConfigured ? 'Sign In' : 'Sign In (Demo)'),
+                    : const Text('Sign In'),
               ),
-              if (!SupabaseConfig.isConfigured) ...[
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _enterDemo,
-                  icon: const Icon(Icons.play_circle_outline),
-                  label: const Text('Explore Demo Dashboard'),
-                ),
-              ],
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: _isLoading ? null : _enterDemo,
+                icon: const Icon(Icons.play_circle_outline),
+                label: const Text('Continue with Demo Mode'),
+              ),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Don't have an account?", style: TextStyle(color: AppColors.textSecondary)),
+                  const Text("Don't have an account?",
+                      style: TextStyle(color: AppColors.textSecondary)),
                   TextButton(
                     onPressed: () => context.go('/signup'),
                     child: const Text('Sign Up'),
