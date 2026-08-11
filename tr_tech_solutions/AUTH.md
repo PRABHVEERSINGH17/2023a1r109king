@@ -47,10 +47,22 @@ Then Sign Up / Sign In uses the live backend when the cloud accepts the login.
 
 ## Social login (optional)
 
-Google / Apple / LinkedIn buttons are in the UI.  
-Enable providers in Supabase first — see `SOCIAL_LOGIN.md`.
+Google / Apple / LinkedIn buttons are in the UI.
 
-Until then, use **email Sign Up** or **Demo Mode**.
+If you see:
+
+```text
+Unsupported provider: provider is not enabled
+```
+
+that provider is **off** in Supabase. Do **not** use those buttons yet.
+
+Use instead:
+
+1. **Create Online Account** (email Sign Up), or  
+2. **Continue with Demo Mode**
+
+To turn social login on later, follow `SOCIAL_LOGIN.md`.
 
 ---
 

@@ -7,6 +7,9 @@ import 'package:tr_tech_solutions/core/theme/app_typography.dart';
 import 'package:tr_tech_solutions/features/auth/providers/auth_provider.dart';
 
 /// Google / Apple / LinkedIn sign-in buttons for login & signup screens.
+///
+/// These only work after each provider is enabled in the Supabase dashboard.
+/// Until then, email Sign Up / Demo Mode are the supported paths.
 class SocialAuthButtons extends ConsumerStatefulWidget {
   const SocialAuthButtons({super.key});
 
@@ -42,41 +45,70 @@ class _SocialAuthButtonsState extends ConsumerState<SocialAuthButtons> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Sign-in was not completed. Try again, or use Demo Mode.',
+              'Sign-in was not completed. Use email Sign Up or Demo Mode.',
             ),
           ),
         );
       }
     } catch (e) {
       if (!mounted) return;
-      final message = e.toString();
-      final needsSetup = message.contains('Supabase') ||
+      final message = e.toString().toLowerCase();
+      final needsSetup = message.contains('supabase') ||
           message.contains('provider is not enabled') ||
-          message.contains('Unsupported provider') ||
+          message.contains('unsupported provider') ||
           message.contains('validation_failed');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+            needsSetup
+                ? '${_label(provider)} is not enabled yet'
+                : '${_label(provider)} sign-in failed',
+          ),
           content: Text(
             needsSetup
-                ? 'Enable ${provider.name} in Supabase (see SOCIAL_LOGIN.md), or use Demo Mode.'
-                : 'Social login failed: $e',
+                ? 'Enable ${_label(provider)} in Supabase → Authentication → Providers '
+                    '(see SOCIAL_LOGIN.md).\n\n'
+                    'Right now use:\n'
+                    '• Create Online Account (email Sign Up)\n'
+                    '• Or Continue with Demo Mode'
+                : '$e',
           ),
-          action: SnackBarAction(
-            label: 'Demo Mode',
-            textColor: AppColors.primaryLight,
-            onPressed: () async {
-              await ref.read(authServiceProvider).enterDemoMode();
-              if (!context.mounted) return;
-              context.go('/dashboard');
-            },
-          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.go('/signup');
+              },
+              child: const Text('Sign Up'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await ref.read(authServiceProvider).enterDemoMode();
+                if (!context.mounted) return;
+                context.go('/dashboard');
+              },
+              child: const Text('Demo Mode'),
+            ),
+          ],
         ),
       );
     } finally {
       if (mounted) setState(() => _busy = null);
     }
   }
+
+  String _label(SocialAuthProvider provider) => switch (provider) {
+        SocialAuthProvider.google => 'Google',
+        SocialAuthProvider.apple => 'Apple',
+        SocialAuthProvider.linkedin => 'LinkedIn',
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -100,21 +132,28 @@ class _SocialAuthButtonsState extends ConsumerState<SocialAuthButtons> {
             const Expanded(child: Divider()),
           ],
         ),
-        const SizedBox(height: 14),
-        if (!SupabaseConfig.isConfigured)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: Text(
-              'Social login needs Supabase providers enabled (SOCIAL_LOGIN.md). Demo Mode works now.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 11,
-                height: 1.35,
-                fontFamily: AppTypography.body,
-              ),
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: AppColors.warning.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.warning.withOpacity(0.35)),
+          ),
+          child: Text(
+            SupabaseConfig.isConfigured
+                ? 'Google / Apple / LinkedIn need to be turned on in Supabase first. Use email Sign Up or Demo Mode until then.'
+                : 'Social login needs Supabase. Use email Sign Up or Demo Mode.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 11.5,
+              height: 1.35,
+              fontFamily: AppTypography.body,
             ),
           ),
+        ),
+        const SizedBox(height: 12),
         _SocialButton(
           label: 'Continue with Google',
           background: Colors.white,
@@ -192,7 +231,7 @@ class _SocialButton extends StatelessWidget {
             : Icon(icon, size: 22),
         label: Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontWeight: FontWeight.w600,
             fontFamily: AppTypography.body,
           ),
