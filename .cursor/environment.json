@@ -16,7 +16,7 @@
   "terminals": [
     {
       "name": "tr-tech-crm",
-      "command": "cd tr_tech_solutions && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080",
+      "command": "export PATH=\"/opt/flutter/bin:$PATH\" && cd tr_tech_solutions && flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080",
       "description": "Flutter web dev server for the TR Tech CRM (demo mode works offline)"
     },
     {
