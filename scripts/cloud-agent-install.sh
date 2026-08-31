@@ -2,7 +2,13 @@
 set -euo pipefail
 
 export PATH="/opt/flutter/bin:${PATH}"
-export CHROME_EXECUTABLE="${CHROME_EXECUTABLE:-/usr/local/bin/google-chrome}"
+if [ -x /usr/local/bin/google-chrome ]; then
+  export CHROME_EXECUTABLE=/usr/local/bin/google-chrome
+fi
+
+if command -v git >/dev/null && [ -d /opt/flutter/.git ]; then
+  git config --global --add safe.directory /opt/flutter
+fi
 
 echo "==> Installing TR Tech Solutions (Flutter CRM) dependencies"
 cd /workspace/tr_tech_solutions
