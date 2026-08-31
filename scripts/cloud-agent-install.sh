@@ -20,6 +20,13 @@ ensure_flutter() {
 
 ensure_flutter
 
+if ! python3 -m venv /tmp/.venv-probe >/dev/null 2>&1; then
+  echo "==> Installing python3.12-venv"
+  sudo apt-get update -qq
+  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3.12-venv
+fi
+rm -rf /tmp/.venv-probe
+
 if [ -x /usr/local/bin/google-chrome ]; then
   export CHROME_EXECUTABLE=/usr/local/bin/google-chrome
 fi
