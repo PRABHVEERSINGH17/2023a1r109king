@@ -1,10 +1,6 @@
 {
   "name": "TR Tech Solutions Monorepo",
   "user": "ubuntu",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
   "install": "./scripts/cloud-agent-install.sh",
   "start": "./scripts/cloud-agent-start.sh",
   "ports": [
